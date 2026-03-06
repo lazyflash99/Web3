@@ -159,7 +159,7 @@ contract BatchExecutor is Ownable, ReentrancyGuard {
         if (calls.length == 0) revert EmptyBatch();
         
         uint256 gasStart = gasleft();
-        results = _executeCalls(calls, msg.sender);
+        results = _executeCalls(calls);
         uint256 gasUsed = gasStart - gasleft();
         
         totalBatchesExecuted++;
@@ -233,7 +233,7 @@ contract BatchExecutor is Ownable, ReentrancyGuard {
 
         // Execute the batch
         uint256 gasStart = gasleft();
-        results = _executeCalls(request.calls, request.from);
+        results = _executeCalls(request.calls);
         uint256 gasUsed = gasStart - gasleft();
 
         totalBatchesExecuted++;
@@ -327,7 +327,7 @@ contract BatchExecutor is Ownable, ReentrancyGuard {
      */
     function simulateBatch(Call[] calldata calls) 
         external 
-        view 
+        pure 
         returns (bool success, bytes[] memory results, uint256 gasEstimate) 
     {
         results = new bytes[](calls.length);
@@ -419,23 +419,15 @@ contract BatchExecutor is Ownable, ReentrancyGuard {
     /**
      * @dev Execute an array of calls
      * @param calls Array of calls to execute
-     * @param originalSender The original transaction initiator
      * @return results Array of return data
      */
-    function _executeCalls(Call[] calldata calls, address originalSender) 
+    function _executeCalls(Call[] calldata calls) 
         internal 
         returns (bytes[] memory results) 
     {
         results = new bytes[](calls.length);
         
         for (uint256 i = 0; i < calls.length; i++) {
-            // Encode the original sender in the calldata if needed
-            // This allows target contracts to know who initiated the batch
-            bytes memory callData = abi.encodePacked(
-                calls[i].data,
-                originalSender
-            );
-            
             (bool success, bytes memory returnData) = calls[i].target.call{
                 value: calls[i].value
             }(calls[i].data);
