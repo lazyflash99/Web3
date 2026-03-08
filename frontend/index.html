@@ -580,7 +580,7 @@
         }
 
         // Add to Batch
-        addToBatchBtn.addEventListener('click', () => {
+        addToBatchBtn.addEventListener('click', async () => {
             if (!sampleDApp) {
                 log('Please load contracts first', 'error');
                 return;
@@ -593,27 +593,33 @@
 
             if (username && bio) {
                 const data = sampleDApp.interface.encodeFunctionData('updateProfile', [username, bio]);
+                // Get REAL gas cost from the blockchain
+                let realGas = 95000;
+                try { realGas = (await sampleDApp.estimateGas.updateProfile(username, bio)).toNumber(); } catch (e) { }
                 pendingCalls.push({
                     target: sampleDApp.address,
                     value: 0,
                     data: data,
                     description: `Update Profile: ${username}`,
-                    estimatedGas: 50000
+                    estimatedGas: realGas
                 });
-                log(`Added profile update: ${username}`, 'info');
+                log(`Added profile update: ${username} (gas: ${realGas.toLocaleString()})`, 'info');
             }
 
             if (listingName && listingPrice) {
                 const price = ethers.utils.parseEther(listingPrice);
                 const data = sampleDApp.interface.encodeFunctionData('createListing', [listingName, price]);
+                // Get REAL gas cost from the blockchain
+                let realGas = 135000;
+                try { realGas = (await sampleDApp.estimateGas.createListing(listingName, price)).toNumber(); } catch (e) { }
                 pendingCalls.push({
                     target: sampleDApp.address,
                     value: 0,
                     data: data,
                     description: `Create Listing: ${listingName} (${listingPrice} ETH)`,
-                    estimatedGas: 80000
+                    estimatedGas: realGas
                 });
-                log(`Added listing: ${listingName}`, 'info');
+                log(`Added listing: ${listingName} (gas: ${realGas.toLocaleString()})`, 'info');
             }
 
             updateBatchDisplay();
