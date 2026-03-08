@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -174,7 +175,8 @@
             font-size: 0.9rem;
         }
 
-        input, textarea {
+        input,
+        textarea {
             width: 100%;
             padding: 0.75rem;
             background: var(--bg-dark);
@@ -184,7 +186,8 @@
             font-size: 1rem;
         }
 
-        input:focus, textarea:focus {
+        input:focus,
+        textarea:focus {
             outline: none;
             border-color: var(--primary);
         }
@@ -281,8 +284,15 @@
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
         }
 
         .loading {
@@ -290,6 +300,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <header>
@@ -331,7 +342,8 @@
                     <label>SampleDApp Address</label>
                     <input type="text" id="sampleDAppAddr" placeholder="0x...">
                 </div>
-                <button id="loadContractsBtn" class="primary">Load Contracts</button>
+                <button id="autoLoadBtn" class="success">⚡ Auto-Load from Deployment</button>
+                <button id="loadContractsBtn" class="primary">Load Contracts (Manual)</button>
             </div>
 
             <!-- Batch Builder Card -->
@@ -461,20 +473,20 @@
 
             try {
                 const address = await signer.getAddress();
-                document.getElementById('walletStatus').textContent = 
+                document.getElementById('walletStatus').textContent =
                     address.slice(0, 6) + '...' + address.slice(-4);
                 document.getElementById('walletStatus').className = 'value connected';
 
                 const network = await provider.getNetwork();
-                document.getElementById('networkStatus').textContent = 
+                document.getElementById('networkStatus').textContent =
                     network.chainId === 31337 ? 'Hardhat' : (network.name || 'Chain ' + network.chainId);
 
                 const balance = await provider.getBalance(address);
-                document.getElementById('balanceStatus').textContent = 
+                document.getElementById('balanceStatus').textContent =
                     parseFloat(ethers.utils.formatEther(balance)).toFixed(4) + ' ETH';
 
                 const gasPrice = await provider.getGasPrice();
-                document.getElementById('gasPrice').textContent = 
+                document.getElementById('gasPrice').textContent =
                     Math.round(parseFloat(ethers.utils.formatUnits(gasPrice, 'gwei'))) + ' Gwei';
             } catch (e) {
                 console.error(e);
@@ -485,7 +497,7 @@
         connectBtn.addEventListener('click', async () => {
             try {
                 log('Checking for MetaMask...', 'info');
-                
+
                 if (typeof window.ethereum === 'undefined') {
                     log('MetaMask not detected! Please install MetaMask extension.', 'error');
                     alert('MetaMask is not installed. Please install it from https://metamask.io');
@@ -493,10 +505,10 @@
                 }
 
                 log('MetaMask found. Requesting account access...', 'info');
-                
+
                 const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                 log('Accounts received: ' + accounts[0], 'info');
-                
+
                 provider = new ethers.providers.Web3Provider(window.ethereum);
                 signer = provider.getSigner();
 
@@ -539,7 +551,7 @@
 
                 log('Contracts loaded successfully!', 'success');
                 loadContractsBtn.textContent = 'Loaded ✓';
-                
+
             } catch (e) {
                 log('Failed to load contracts: ' + e.message, 'error');
             }
@@ -641,7 +653,7 @@
                 document.getElementById('batchedGas').textContent = gasStats.batched.toLocaleString();
                 const saved = gasStats.individual - gasStats.batched;
                 document.getElementById('gasSaved').textContent = saved.toLocaleString();
-                document.getElementById('savingsPercent').textContent = 
+                document.getElementById('savingsPercent').textContent =
                     Math.round((saved / gasStats.individual) * 100) + '%';
 
                 document.getElementById('gasComparison').style.display = 'block';
@@ -709,8 +721,38 @@
             log('Batch cleared', 'info');
         });
 
+        // Auto-Load Contracts from deployment file
+        const autoLoadBtn = document.getElementById('autoLoadBtn');
+        autoLoadBtn.addEventListener('click', autoLoadContracts);
+
+        async function autoLoadContracts() {
+            try {
+                log('Fetching deployment info from server...', 'info');
+                const res = await fetch('/api/deployments/localhost');
+                if (!res.ok) throw new Error('No local deployment found. Run: npm run deploy:local');
+                const deployment = await res.json();
+
+                document.getElementById('batchExecutorAddr').value = deployment.contracts.BatchExecutor;
+                document.getElementById('sampleDAppAddr').value = deployment.contracts.SampleDApp;
+                log('Addresses loaded: BatchExecutor & SampleDApp', 'success');
+
+                // Auto-click load if wallet is connected
+                if (signer) {
+                    loadContractsBtn.click();
+                } else {
+                    log('Connect your wallet, then click "Load Contracts"', 'info');
+                }
+            } catch (e) {
+                log('Auto-load failed: ' + e.message, 'error');
+            }
+        }
+
         // Initialize
         updateBatchDisplay();
+
+        // Try auto-loading addresses on page load
+        autoLoadContracts();
     </script>
 </body>
+
 </html>

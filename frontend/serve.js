@@ -5,8 +5,28 @@ const path = require('path');
 const PORT = 8080;
 
 const server = http.createServer((req, res) => {
+    // API endpoint to serve deployment info
+    const deploymentMatch = req.url.match(/^\/api\/deployments\/(.+)$/);
+    if (deploymentMatch) {
+        const network = deploymentMatch[1];
+        const deploymentFile = path.join(__dirname, '..', 'deployments', `${network}.json`);
+
+        res.setHeader('Access-Control-Allow-Origin', '*');
+
+        fs.readFile(deploymentFile, (err, content) => {
+            if (err) {
+                res.writeHead(404, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: `No deployment found for network: ${network}` }));
+                return;
+            }
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(content);
+        });
+        return;
+    }
+
     let filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
-    
+
     const ext = path.extname(filePath);
     const contentTypes = {
         '.html': 'text/html',
@@ -14,7 +34,7 @@ const server = http.createServer((req, res) => {
         '.css': 'text/css',
         '.json': 'application/json'
     };
-    
+
     fs.readFile(filePath, (err, content) => {
         if (err) {
             res.writeHead(404);
