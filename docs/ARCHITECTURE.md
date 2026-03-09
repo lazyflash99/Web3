@@ -349,7 +349,7 @@ Savings: (N-1) × 21,000 gas
 **Example:**
 - 5 individual transactions: 5 × 21,000 = 105,000 gas overhead
 - 1 batched transaction: 1 × 21,000 = 21,000 gas overhead
-- **Savings: 84,000 gas (~80%)**
+- **Savings: 84,000 gas in base overhead (~80% of overhead; ~12-17% total gas)**
 
 ### 2. Calldata Optimization
 
@@ -510,7 +510,7 @@ Gasless token approvals:
 
 This Gas Fee Optimizer system provides a comprehensive solution for reducing blockchain transaction costs while improving user experience. By combining transaction batching, meta-transactions, and flexible gas sponsorship, it addresses the key pain points of Ethereum usage:
 
-1. **High gas costs** → Batching reduces cost by ~80%
+1. **High gas costs** → Batching reduces base overhead by ~80% (12-17% total savings)
 2. **Poor UX** → Single signature for multiple actions
 3. **Onboarding friction** → Users don't need ETH to start
 4. **Technical complexity** → SDK abstracts blockchain details

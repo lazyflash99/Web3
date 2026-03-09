@@ -313,7 +313,7 @@ contract BatchExecutor is Ownable, ReentrancyGuard {
             metaTx.to,
             metaTx.value,
             metaTx.data,
-            metaTx.nonce - 1
+            metaTx.nonce
         );
     }
 
@@ -382,7 +382,8 @@ contract BatchExecutor is Ownable, ReentrancyGuard {
      * @notice Withdraw any ETH accidentally sent to this contract
      */
     function withdrawETH() external onlyOwner {
-        payable(owner()).transfer(address(this).balance);
+        (bool success, ) = payable(owner()).call{value: address(this).balance}("");
+        require(success, "Transfer failed");
     }
 
     // ============ VIEW FUNCTIONS ============

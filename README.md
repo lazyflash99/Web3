@@ -107,7 +107,7 @@ npx hardhat run scripts/demo.js --network localhost
 
 ### Prerequisites
 
-- Node.js v16+ 
+- Node.js v18+ 
 - npm or yarn
 - Git
 
@@ -407,7 +407,7 @@ Executing batch with 4 calls...
 Gas Comparison:
    Individual transactions: 279,380 gas
    Batched transaction:     196,567 gas
-   Gas saved:               82,813 gas (30%)
+   Gas saved:               82,813 gas (12%)
 
 DEMO 3: Meta-Transaction (Gasless)
 ============================================

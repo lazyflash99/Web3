@@ -180,6 +180,7 @@ contract GasSponsor is Ownable, ReentrancyGuard {
         uint256 gasPrice
     ) 
         external 
+        onlyOwner 
         nonReentrant 
     {
         if (!relayers[relayer].isActive) revert InvalidRelayer();
@@ -325,7 +326,8 @@ contract GasSponsor is Ownable, ReentrancyGuard {
      */
     function withdraw(address to, uint256 amount) external onlyOwner {
         if (address(this).balance < amount) revert InsufficientFunds();
-        payable(to).transfer(amount);
+        (bool success, ) = payable(to).call{value: amount}("");
+        require(success, "Transfer failed");
         emit FundsWithdrawn(to, amount);
     }
 

@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import "./MetaTxRecipient.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  * @title SampleDAppMeta
@@ -18,7 +19,7 @@ import "./MetaTxRecipient.sol";
  * - Relayer submits via Forwarder
  * - User's address is correctly identified in all functions
  */
-contract SampleDAppMeta is MetaTxRecipient {
+contract SampleDAppMeta is MetaTxRecipient, Ownable {
     
     // ============ STRUCTS ============
     
@@ -68,7 +69,17 @@ contract SampleDAppMeta is MetaTxRecipient {
 
     // ============ CONSTRUCTOR ============
 
-    constructor(address _trustedForwarder) MetaTxRecipient(_trustedForwarder) {}
+    constructor(address _trustedForwarder) MetaTxRecipient(_trustedForwarder) Ownable(msg.sender) {}
+
+    // ============ OVERRIDES ============
+
+    function _msgSender() internal view override(MetaTxRecipient, Context) returns (address) {
+        return MetaTxRecipient._msgSender();
+    }
+
+    function _msgData() internal view override(MetaTxRecipient, Context) returns (bytes calldata) {
+        return MetaTxRecipient._msgData();
+    }
 
     // ============ PROFILE FUNCTIONS ============
 
@@ -90,7 +101,7 @@ contract SampleDAppMeta is MetaTxRecipient {
      * @param user User to verify
      * @param verified Verification status
      */
-    function setVerified(address user, bool verified) external {
+    function setVerified(address user, bool verified) external onlyOwner {
         profiles[user].isVerified = verified;
     }
 
@@ -241,7 +252,8 @@ contract SampleDAppMeta is MetaTxRecipient {
         address sender = _msgSender();
         require(userBalances[sender] >= amount, "Insufficient balance");
         userBalances[sender] -= amount;
-        payable(sender).transfer(amount);
+        (bool success, ) = payable(sender).call{value: amount}("");
+        require(success, "Transfer failed");
         emit Withdrawn(sender, amount);
     }
 

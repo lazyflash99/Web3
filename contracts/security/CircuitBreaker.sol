@@ -136,7 +136,7 @@ contract CircuitBreaker is Ownable, AccessControl {
     /**
      * @notice Apply rate limiting
      */
-    modifier rateImited() {
+    modifier rateLimited() {
         RateLimit storage limit = rateLimits[msg.sender];
         
         if (block.timestamp >= limit.resetTime) {
@@ -314,7 +314,7 @@ contract CircuitBreaker is Ownable, AccessControl {
         uint256 balance = address(this).balance;
         (bool success, ) = to.call{value: balance}("");
         require(success, "Transfer failed");
-        emit EmergencyWhithdrawal(to, balance);
+        emit EmergencyWithdrawal(to, balance);
     }
 
     /**
@@ -331,9 +331,6 @@ contract CircuitBreaker is Ownable, AccessControl {
         );
         require(success, "Token transfer failed");
     }
-
-    // Fix typo in event
-    event EmergencyWhithdrawal(address indexed to, uint256 amount);
 
     // ═══════════════════════════════════════════════════════════════════════
     //                            VIEW FUNCTIONS

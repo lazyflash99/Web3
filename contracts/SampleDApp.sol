@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
+
 /**
  * @title SampleDApp
  * @author Web3Assam Gas Optimizer Team
@@ -12,7 +14,7 @@ pragma solidity ^0.8.20;
  * - Without batching: Each action = 1 transaction = 1 gas payment
  * - With batching: Multiple actions = 1 transaction = 1 gas payment
  */
-contract SampleDApp {
+contract SampleDApp is Ownable {
     
     // ============ STRUCTS ============
     
@@ -60,6 +62,8 @@ contract SampleDApp {
     event Deposited(address indexed user, uint256 amount);
     event Withdrawn(address indexed user, uint256 amount);
 
+    constructor() Ownable(msg.sender) {}
+
     // ============ PROFILE FUNCTIONS ============
 
     /**
@@ -78,7 +82,7 @@ contract SampleDApp {
      * @param user User to verify
      * @param verified Verification status
      */
-    function setVerified(address user, bool verified) external {
+    function setVerified(address user, bool verified) external onlyOwner {
         profiles[user].isVerified = verified;
     }
 
@@ -221,7 +225,8 @@ contract SampleDApp {
     function withdraw(uint256 amount) external {
         require(userBalances[msg.sender] >= amount, "Insufficient balance");
         userBalances[msg.sender] -= amount;
-        payable(msg.sender).transfer(amount);
+        (bool success, ) = payable(msg.sender).call{value: amount}("");
+        require(success, "Transfer failed");
         emit Withdrawn(msg.sender, amount);
     }
 

@@ -594,12 +594,19 @@
                 executeBatchBtn.disabled = true;
                 executeMetaBtn.disabled = true;
             } else {
-                batchItems.innerHTML = pendingCalls.map((call, i) => `
-                    <div class="batch-item">
-                        <span>${call.description}</span>
-                        <span style="color: var(--text-muted);">~${call.estimatedGas} gas</span>
-                    </div>
-                `).join('');
+                batchItems.innerHTML = '';
+                pendingCalls.forEach((call, i) => {
+                    const div = document.createElement('div');
+                    div.className = 'batch-item';
+                    const desc = document.createElement('span');
+                    desc.textContent = call.description;
+                    const gas = document.createElement('span');
+                    gas.style.color = 'var(--text-muted)';
+                    gas.textContent = '~' + call.estimatedGas + ' gas';
+                    div.appendChild(desc);
+                    div.appendChild(gas);
+                    batchItems.appendChild(div);
+                });
                 executeBatchBtn.disabled = !batchExecutor;
                 executeMetaBtn.disabled = !batchExecutor;
             }
@@ -688,7 +695,7 @@
 
                 // Update gas stats
                 gasStats.individual = pendingCalls.reduce((sum, c) => sum + c.estimatedGas + 21000, 0);
-                gasStats.batched = receipt.gasUsed.toNumber();
+                gasStats.batched = parseInt(receipt.gasUsed.toString());
 
                 document.getElementById('batchedGas').textContent = gasStats.batched.toLocaleString();
                 const saved = gasStats.individual - gasStats.batched;
