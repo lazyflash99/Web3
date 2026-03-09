@@ -8,7 +8,7 @@ async function main() {
   console.log("============================================\n");
 
   const [deployer, relayer] = await hre.ethers.getSigners();
-  
+
   console.log("Deployer address:", deployer.address);
   console.log("Relayer address:", relayer?.address || "Not available");
   console.log("Deployer balance:", hre.ethers.formatEther(await hre.ethers.provider.getBalance(deployer.address)), "ETH\n");
@@ -48,7 +48,7 @@ async function main() {
   // 5. Deploy SampleDApp
   console.log("\n5. Deploying SampleDApp...");
   const SampleDApp = await hre.ethers.getContractFactory("SampleDApp");
-  const sampleDApp = await SampleDApp.deploy();
+  const sampleDApp = await SampleDApp.deploy(batchExecutorAddress);
   await sampleDApp.waitForDeployment();
   const sampleDAppAddress = await sampleDApp.getAddress();
   console.log("   SampleDApp deployed to:", sampleDAppAddress);
@@ -77,6 +77,18 @@ async function main() {
   console.log("- Funding GasSponsor with 1 ETH...");
   await gasSponsor.deposit({ value: hre.ethers.parseEther("1") });
 
+  // Set up sponsor key system
+  console.log("- Setting sponsor key (KRITI2026)...");
+  await gasSponsor.setSponsorKey("KRITI2026");
+
+  // Enable whitelist-only mode (users must redeem key first)
+  console.log("- Enabling whitelist-only mode...");
+  await gasSponsor.setWhitelistOnly(true);
+
+  // Set max 10 sponsored transactions per user per day
+  console.log("- Setting max 10 tx/day per user...");
+  await gasSponsor.setMaxTxPerDay(10);
+
   console.log("\n============================================");
   console.log("Deployment Complete!");
   console.log("============================================\n");
@@ -103,7 +115,7 @@ async function main() {
   if (!fs.existsSync(deploymentsDir)) {
     fs.mkdirSync(deploymentsDir, { recursive: true });
   }
-  
+
   const deploymentFile = path.join(deploymentsDir, `${hre.network.name}.json`);
   fs.writeFileSync(deploymentFile, JSON.stringify(deploymentInfo, null, 2));
   console.log(`\nDeployment info saved to: ${deploymentFile}`);
@@ -113,7 +125,7 @@ async function main() {
     console.log("\n============================================");
     console.log("Verifying contracts on Etherscan...");
     console.log("============================================\n");
-    
+
     try {
       await hre.run("verify:verify", {
         address: batchExecutorAddress,

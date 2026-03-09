@@ -30,7 +30,7 @@ describe("Gas Fee Optimizer", function () {
 
     // Deploy SampleDApp
     const SampleDApp = await ethers.getContractFactory("SampleDApp");
-    sampleDApp = await SampleDApp.deploy();
+    sampleDApp = await SampleDApp.deploy(await batchExecutor.getAddress());
 
     // Deploy GaslessToken
     const GaslessToken = await ethers.getContractFactory("GaslessToken");
@@ -40,6 +40,8 @@ describe("Gas Fee Optimizer", function () {
     await batchExecutor.setGasSponsor(await gasSponsor.getAddress());
     await gasSponsor.setRelayer(relayer.address, true);
     await gasSponsor.deposit({ value: ethers.parseEther("1") });
+    await gasSponsor.setMaxTxPerDay(10);
+    await gasSponsor.setSponsorKey("KRITI2026");
   });
 
   describe("BatchExecutor", function () {
@@ -53,10 +55,8 @@ describe("Gas Fee Optimizer", function () {
 
         await batchExecutor.connect(user1).executeBatch(calls);
 
-        // Note: When called through BatchExecutor, msg.sender in SampleDApp is the BatchExecutor
-        // The profile is stored under BatchExecutor's address
-        const batchExecutorAddr = await batchExecutor.getAddress();
-        const profile = await sampleDApp.getProfile(batchExecutorAddr);
+        // With EIP-2771, _msgSender() correctly returns the real user
+        const profile = await sampleDApp.getProfile(user1.address);
         expect(profile.username).to.equal("Alice");
         expect(profile.bio).to.equal("Developer");
       });
@@ -82,11 +82,10 @@ describe("Gas Fee Optimizer", function () {
 
         await batchExecutor.connect(user1).executeBatch(calls);
 
-        // Profile stored under BatchExecutor's address
-        const batchExecutorAddr = await batchExecutor.getAddress();
-        const profile = await sampleDApp.getProfile(batchExecutorAddr);
+        // With EIP-2771, profile is stored under real user address
+        const profile = await sampleDApp.getProfile(user1.address);
         expect(profile.username).to.equal("Bob");
-        expect(profile.totalTransactions).to.equal(2n); // 2 listings created
+        expect(profile.totalTransactions).to.equal(2n);
 
         const stats = await sampleDApp.getStats();
         expect(stats._totalListings).to.equal(2n);
@@ -131,6 +130,11 @@ describe("Gas Fee Optimizer", function () {
     });
 
     describe("Meta-Transaction Batch Execution", function () {
+      beforeEach(async function () {
+        // Redeem key beforehand since meta-tx requires whitelist now
+        await gasSponsor.connect(user1).redeemKey("KRITI2026");
+      });
+
       it("should execute a batch via meta-transaction", async function () {
         const nonce = await batchExecutor.getNonce(user1.address);
         const deadline = (await time.latest()) + 3600;
@@ -174,7 +178,7 @@ describe("Gas Fee Optimizer", function () {
 
         // Hash calls
         function hashCalls(calls) {
-          const callHashes = calls.map(call => 
+          const callHashes = calls.map(call =>
             ethers.keccak256(
               ethers.AbiCoder.defaultAbiCoder().encode(
                 ["address", "uint256", "bytes32"],
@@ -197,16 +201,21 @@ describe("Gas Fee Optimizer", function () {
 
         // User1's balance should not change (relayer pays)
         const user1BalanceBefore = await ethers.provider.getBalance(user1.address);
-        
+
         // Relayer executes the meta-transaction
-        await batchExecutor.connect(relayer).executeBatchMeta(batchRequest, signature);
+        try {
+          const tx = await batchExecutor.connect(relayer).executeBatchMeta(batchRequest, signature);
+          await tx.wait();
+        } catch (e) {
+          console.error("MetaTx Error:", e.message);
+          throw e;
+        }
 
         const user1BalanceAfter = await ethers.provider.getBalance(user1.address);
         expect(user1BalanceAfter).to.equal(user1BalanceBefore); // User paid no gas
 
-        // Verify the calls were executed (profile stored under BatchExecutor's address)
-        const batchExecutorAddr = await batchExecutor.getAddress();
-        const profile = await sampleDApp.getProfile(batchExecutorAddr);
+        // Verify the calls were executed (with EIP-2771, profile stored under real user)
+        const profile = await sampleDApp.getProfile(user1.address);
         expect(profile.username).to.equal("MetaUser");
       });
 
@@ -359,7 +368,7 @@ describe("Gas Fee Optimizer", function () {
     describe("Funding", function () {
       it("should accept deposits", async function () {
         const balanceBefore = await ethers.provider.getBalance(await gasSponsor.getAddress());
-        
+
         await gasSponsor.connect(user1).deposit({ value: ethers.parseEther("0.5") });
 
         const balanceAfter = await ethers.provider.getBalance(await gasSponsor.getAddress());
@@ -368,7 +377,7 @@ describe("Gas Fee Optimizer", function () {
 
       it("should allow owner to withdraw", async function () {
         const ownerBalanceBefore = await ethers.provider.getBalance(owner.address);
-        
+
         await gasSponsor.withdraw(user2.address, ethers.parseEther("0.5"));
 
         const user2Balance = await ethers.provider.getBalance(user2.address);
@@ -427,8 +436,8 @@ describe("Gas Fee Optimizer", function () {
         // Execute
         await forwarder.connect(relayer).execute(request, signature);
 
-        // Note: SampleDApp doesn't use _msgSender(), so it will see msg.sender as forwarder
-        // In a real implementation, SampleDApp would inherit from MetaTxRecipient
+        // SampleDApp now uses _msgSender() via MetaTxRecipient, so it correctly
+        // identifies the real user when called through trusted forwarders
       });
 
       it("should increment nonce after execution", async function () {

@@ -1,21 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import "./MetaTxRecipient.sol";
+
 /**
  * @title SampleDApp
  * @author Web3Assam Gas Optimizer Team
  * @notice A sample decentralized application to demonstrate batch transactions
  * @dev This contract simulates a typical DApp with multiple user actions
- * 
+ *
  * USE CASE: NFT Marketplace
  * - Users can list items, place bids, update profiles, etc.
  * - Without batching: Each action = 1 transaction = 1 gas payment
  * - With batching: Multiple actions = 1 transaction = 1 gas payment
  */
-contract SampleDApp {
-    
+contract SampleDApp is MetaTxRecipient {
     // ============ STRUCTS ============
-    
+
     struct UserProfile {
         string username;
         string bio;
@@ -39,24 +40,37 @@ contract SampleDApp {
     }
 
     // ============ STATE VARIABLES ============
-    
+
     mapping(address => UserProfile) public profiles;
     mapping(uint256 => Listing) public listings;
     mapping(uint256 => Bid[]) public listingBids;
     mapping(address => uint256[]) public userListings;
     mapping(address => uint256) public userBalances;
-    
+
     uint256 public nextListingId;
     uint256 public totalListings;
     uint256 public totalBids;
 
+    // ============ CONSTRUCTOR ============
+
+    constructor(address _batchExecutor) MetaTxRecipient(_batchExecutor) {}
+
     // ============ EVENTS ============
-    
+
     event ProfileUpdated(address indexed user, string username);
-    event ListingCreated(uint256 indexed listingId, address indexed seller, string itemName, uint256 price);
+    event ListingCreated(
+        uint256 indexed listingId,
+        address indexed seller,
+        string itemName,
+        uint256 price
+    );
     event ListingUpdated(uint256 indexed listingId, uint256 newPrice);
     event ListingCancelled(uint256 indexed listingId);
-    event BidPlaced(uint256 indexed listingId, address indexed bidder, uint256 amount);
+    event BidPlaced(
+        uint256 indexed listingId,
+        address indexed bidder,
+        uint256 amount
+    );
     event Deposited(address indexed user, uint256 amount);
     event Withdrawn(address indexed user, uint256 amount);
 
@@ -67,10 +81,14 @@ contract SampleDApp {
      * @param username User's display name
      * @param bio User's biography
      */
-    function updateProfile(string calldata username, string calldata bio) external {
-        profiles[msg.sender].username = username;
-        profiles[msg.sender].bio = bio;
-        emit ProfileUpdated(msg.sender, username);
+    function updateProfile(
+        string calldata username,
+        string calldata bio
+    ) external {
+        address sender = _msgSender();
+        profiles[sender].username = username;
+        profiles[sender].bio = bio;
+        emit ProfileUpdated(sender, username);
     }
 
     /**
@@ -90,26 +108,27 @@ contract SampleDApp {
      * @param price Price in wei
      * @return listingId The ID of the created listing
      */
-    function createListing(string calldata itemName, uint256 price) 
-        external 
-        returns (uint256 listingId) 
-    {
+    function createListing(
+        string calldata itemName,
+        uint256 price
+    ) external returns (uint256 listingId) {
+        address sender = _msgSender();
         listingId = nextListingId++;
-        
+
         listings[listingId] = Listing({
-            seller: msg.sender,
+            seller: sender,
             itemName: itemName,
             price: price,
             isActive: true,
             createdAt: block.timestamp
         });
 
-        userListings[msg.sender].push(listingId);
+        userListings[sender].push(listingId);
         totalListings++;
 
-        profiles[msg.sender].totalTransactions++;
+        profiles[sender].totalTransactions++;
 
-        emit ListingCreated(listingId, msg.sender, itemName, price);
+        emit ListingCreated(listingId, sender, itemName, price);
     }
 
     /**
@@ -118,9 +137,9 @@ contract SampleDApp {
      * @param newPrice New price
      */
     function updateListing(uint256 listingId, uint256 newPrice) external {
-        require(listings[listingId].seller == msg.sender, "Not seller");
+        require(listings[listingId].seller == _msgSender(), "Not seller");
         require(listings[listingId].isActive, "Listing not active");
-        
+
         listings[listingId].price = newPrice;
         emit ListingUpdated(listingId, newPrice);
     }
@@ -130,7 +149,7 @@ contract SampleDApp {
      * @param listingId ID of the listing
      */
     function cancelListing(uint256 listingId) external {
-        require(listings[listingId].seller == msg.sender, "Not seller");
+        require(listings[listingId].seller == _msgSender(), "Not seller");
         listings[listingId].isActive = false;
         emit ListingCancelled(listingId);
     }
@@ -142,19 +161,16 @@ contract SampleDApp {
      * @return listingIds Array of created listing IDs
      */
     function createMultipleListings(
-        string[] calldata itemNames, 
+        string[] calldata itemNames,
         uint256[] calldata prices
-    ) 
-        external 
-        returns (uint256[] memory listingIds) 
-    {
+    ) external returns (uint256[] memory listingIds) {
         require(itemNames.length == prices.length, "Array length mismatch");
-        
+
         listingIds = new uint256[](itemNames.length);
-        
+
         for (uint256 i = 0; i < itemNames.length; i++) {
             uint256 listingId = nextListingId++;
-            
+
             listings[listingId] = Listing({
                 seller: msg.sender,
                 itemName: itemNames[i],
@@ -165,7 +181,7 @@ contract SampleDApp {
 
             userListings[msg.sender].push(listingId);
             listingIds[i] = listingId;
-            
+
             emit ListingCreated(listingId, msg.sender, itemNames[i], prices[i]);
         }
 
@@ -183,16 +199,15 @@ contract SampleDApp {
         require(listings[listingId].isActive, "Listing not active");
         require(msg.value > 0, "Bid must be positive");
 
-        listingBids[listingId].push(Bid({
-            bidder: msg.sender,
-            amount: msg.value,
-            timestamp: block.timestamp
-        }));
+        address sender = _msgSender();
+        listingBids[listingId].push(
+            Bid({bidder: sender, amount: msg.value, timestamp: block.timestamp})
+        );
 
         totalBids++;
-        profiles[msg.sender].totalTransactions++;
+        profiles[sender].totalTransactions++;
 
-        emit BidPlaced(listingId, msg.sender, msg.value);
+        emit BidPlaced(listingId, sender, msg.value);
     }
 
     /**
@@ -210,8 +225,8 @@ contract SampleDApp {
      * @notice Deposit ETH to user balance
      */
     function deposit() external payable {
-        userBalances[msg.sender] += msg.value;
-        emit Deposited(msg.sender, msg.value);
+        userBalances[_msgSender()] += msg.value;
+        emit Deposited(_msgSender(), msg.value);
     }
 
     /**
@@ -219,10 +234,11 @@ contract SampleDApp {
      * @param amount Amount to withdraw
      */
     function withdraw(uint256 amount) external {
-        require(userBalances[msg.sender] >= amount, "Insufficient balance");
-        userBalances[msg.sender] -= amount;
-        payable(msg.sender).transfer(amount);
-        emit Withdrawn(msg.sender, amount);
+        address sender = _msgSender();
+        require(userBalances[sender] >= amount, "Insufficient balance");
+        userBalances[sender] -= amount;
+        payable(sender).transfer(amount);
+        emit Withdrawn(sender, amount);
     }
 
     // ============ VIEW FUNCTIONS ============
@@ -231,7 +247,9 @@ contract SampleDApp {
      * @notice Get user's profile
      * @param user User address
      */
-    function getProfile(address user) external view returns (UserProfile memory) {
+    function getProfile(
+        address user
+    ) external view returns (UserProfile memory) {
         return profiles[user];
     }
 
@@ -239,7 +257,9 @@ contract SampleDApp {
      * @notice Get user's listings
      * @param user User address
      */
-    function getUserListings(address user) external view returns (uint256[] memory) {
+    function getUserListings(
+        address user
+    ) external view returns (uint256[] memory) {
         return userListings[user];
     }
 
@@ -247,18 +267,24 @@ contract SampleDApp {
      * @notice Get listing details
      * @param listingId Listing ID
      */
-    function getListing(uint256 listingId) external view returns (Listing memory) {
+    function getListing(
+        uint256 listingId
+    ) external view returns (Listing memory) {
         return listings[listingId];
     }
 
     /**
      * @notice Get contract statistics
      */
-    function getStats() external view returns (
-        uint256 _totalListings,
-        uint256 _totalBids,
-        uint256 _contractBalance
-    ) {
+    function getStats()
+        external
+        view
+        returns (
+            uint256 _totalListings,
+            uint256 _totalBids,
+            uint256 _contractBalance
+        )
+    {
         return (totalListings, totalBids, address(this).balance);
     }
 }

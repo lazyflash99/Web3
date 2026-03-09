@@ -11,7 +11,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
  * @author Web3Assam Gas Optimizer Team
  * @notice A gas-optimized batch transaction executor with meta-transaction support
  * @dev Implements EIP-712 typed signatures for secure off-chain signing
- * 
+ *
  * ARCHITECTURE:
  * - Users sign transactions off-chain (no gas required for signing)
  * - Relayers submit batched transactions on-chain
@@ -23,33 +23,36 @@ contract BatchExecutor is Ownable, ReentrancyGuard {
     using MessageHashUtils for bytes32;
 
     // ============ CONSTANTS ============
-    
+
     /// @notice EIP-712 Domain Separator typehash
-    bytes32 public constant DOMAIN_TYPEHASH = keccak256(
-        "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
-    );
-    
+    bytes32 public constant DOMAIN_TYPEHASH =
+        keccak256(
+            "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
+        );
+
     /// @notice Meta-transaction typehash for signature verification
-    bytes32 public constant META_TX_TYPEHASH = keccak256(
-        "MetaTransaction(address from,address to,uint256 value,bytes data,uint256 nonce,uint256 deadline)"
-    );
+    bytes32 public constant META_TX_TYPEHASH =
+        keccak256(
+            "MetaTransaction(address from,address to,uint256 value,bytes data,uint256 nonce,uint256 deadline)"
+        );
 
     /// @notice Batch execution typehash
-    bytes32 public constant BATCH_TYPEHASH = keccak256(
-        "BatchExecution(address from,bytes32 callsHash,uint256 nonce,uint256 deadline)"
-    );
+    bytes32 public constant BATCH_TYPEHASH =
+        keccak256(
+            "BatchExecution(address from,bytes32 callsHash,uint256 nonce,uint256 deadline)"
+        );
 
     // ============ STATE VARIABLES ============
-    
+
     /// @notice EIP-712 domain separator (computed at deployment)
     bytes32 public immutable DOMAIN_SEPARATOR;
-    
+
     /// @notice Mapping of user addresses to their current nonce (replay protection)
     mapping(address => uint256) public nonces;
-    
+
     /// @notice Mapping of authorized relayers
     mapping(address => bool) public authorizedRelayers;
-    
+
     /// @notice Whether relayer whitelist is enabled
     bool public relayerWhitelistEnabled;
 
@@ -63,34 +66,34 @@ contract BatchExecutor is Ownable, ReentrancyGuard {
     uint256 public totalBatchesExecuted;
 
     // ============ STRUCTS ============
-    
+
     /// @notice Represents a single call within a batch
     struct Call {
-        address target;      // Contract to call
-        uint256 value;       // ETH value to send
-        bytes data;          // Calldata to execute
+        address target; // Contract to call
+        uint256 value; // ETH value to send
+        bytes data; // Calldata to execute
     }
 
     /// @notice Meta-transaction data structure
     struct MetaTransaction {
-        address from;        // Original signer
-        address to;          // Target contract
-        uint256 value;       // ETH value
-        bytes data;          // Calldata
-        uint256 nonce;       // Replay protection
-        uint256 deadline;    // Expiration timestamp
+        address from; // Original signer
+        address to; // Target contract
+        uint256 value; // ETH value
+        bytes data; // Calldata
+        uint256 nonce; // Replay protection
+        uint256 deadline; // Expiration timestamp
     }
 
     /// @notice Batch execution request
     struct BatchRequest {
-        address from;        // Original signer
-        Call[] calls;        // Array of calls to execute
-        uint256 nonce;       // Replay protection
-        uint256 deadline;    // Expiration timestamp
+        address from; // Original signer
+        Call[] calls; // Array of calls to execute
+        uint256 nonce; // Replay protection
+        uint256 deadline; // Expiration timestamp
     }
 
     // ============ EVENTS ============
-    
+
     event BatchExecuted(
         address indexed executor,
         address indexed signer,
@@ -115,11 +118,14 @@ contract BatchExecutor is Ownable, ReentrancyGuard {
     );
 
     event RelayerAuthorized(address indexed relayer, bool authorized);
-    event GasSponsorUpdated(address indexed oldSponsor, address indexed newSponsor);
+    event GasSponsorUpdated(
+        address indexed oldSponsor,
+        address indexed newSponsor
+    );
     event RelayerWhitelistToggled(bool enabled);
 
     // ============ ERRORS ============
-    
+
     error InvalidSignature();
     error ExpiredDeadline();
     error InvalidNonce();
@@ -129,7 +135,7 @@ contract BatchExecutor is Ownable, ReentrancyGuard {
     error InsufficientBalance();
 
     // ============ CONSTRUCTOR ============
-    
+
     constructor() Ownable(msg.sender) {
         DOMAIN_SEPARATOR = keccak256(
             abi.encode(
@@ -150,29 +156,26 @@ contract BatchExecutor is Ownable, ReentrancyGuard {
      * @param calls Array of calls to execute
      * @return results Array of return data from each call
      */
-    function executeBatch(Call[] calldata calls) 
-        external 
-        payable 
-        nonReentrant 
-        returns (bytes[] memory results) 
-    {
+    function executeBatch(
+        Call[] calldata calls
+    ) external payable nonReentrant returns (bytes[] memory results) {
         if (calls.length == 0) revert EmptyBatch();
-        
+
         uint256 gasStart = gasleft();
-        results = _executeCalls(calls);
+        results = _executeCalls(calls, msg.sender);
         uint256 gasUsed = gasStart - gasleft();
-        
+
         totalBatchesExecuted++;
-        
+
         // Estimate gas savings (single tx overhead vs multiple tx overhead)
         // Base tx cost is ~21000 gas, so batching N calls saves (N-1) * 21000
         uint256 estimatedSavings = (calls.length - 1) * 21000;
         totalGasSaved += estimatedSavings;
 
         emit BatchExecuted(
-            msg.sender, 
-            msg.sender, 
-            calls.length, 
+            msg.sender,
+            msg.sender,
+            calls.length,
             gasUsed,
             totalBatchesExecuted
         );
@@ -188,11 +191,7 @@ contract BatchExecutor is Ownable, ReentrancyGuard {
     function executeBatchMeta(
         BatchRequest calldata request,
         bytes calldata signature
-    ) 
-        external 
-        nonReentrant 
-        returns (bytes[] memory results) 
-    {
+    ) external nonReentrant returns (bytes[] memory results) {
         // Check relayer authorization
         if (relayerWhitelistEnabled && !authorizedRelayers[msg.sender]) {
             revert UnauthorizedRelayer();
@@ -233,11 +232,11 @@ contract BatchExecutor is Ownable, ReentrancyGuard {
 
         // Execute the batch
         uint256 gasStart = gasleft();
-        results = _executeCalls(request.calls);
+        results = _executeCalls(request.calls, request.from);
         uint256 gasUsed = gasStart - gasleft();
 
         totalBatchesExecuted++;
-        
+
         uint256 estimatedSavings = (request.calls.length - 1) * 21000;
         totalGasSaved += estimatedSavings;
 
@@ -261,11 +260,7 @@ contract BatchExecutor is Ownable, ReentrancyGuard {
     function executeMetaTransaction(
         MetaTransaction calldata metaTx,
         bytes calldata signature
-    ) 
-        external 
-        nonReentrant 
-        returns (bool success, bytes memory returnData) 
-    {
+    ) external nonReentrant returns (bool success, bytes memory returnData) {
         // Check relayer authorization
         if (relayerWhitelistEnabled && !authorizedRelayers[msg.sender]) {
             revert UnauthorizedRelayer();
@@ -306,7 +301,9 @@ contract BatchExecutor is Ownable, ReentrancyGuard {
         nonces[metaTx.from]++;
 
         // Execute the transaction
-        (success, returnData) = metaTx.to.call{value: metaTx.value}(metaTx.data);
+        (success, returnData) = metaTx.to.call{value: metaTx.value}(
+            metaTx.data
+        );
 
         emit MetaTransactionExecuted(
             metaTx.from,
@@ -325,20 +322,26 @@ contract BatchExecutor is Ownable, ReentrancyGuard {
      * @return results Array of return data
      * @return gasEstimate Estimated gas for the batch
      */
-    function simulateBatch(Call[] calldata calls) 
-        external 
-        pure 
-        returns (bool success, bytes[] memory results, uint256 gasEstimate) 
+    function simulateBatch(
+        Call[] calldata calls
+    )
+        external
+        pure
+        returns (bool success, bytes[] memory results, uint256 gasEstimate)
     {
-        results = new bytes[](calls.length);
+        uint256 len = calls.length;
+        results = new bytes[](len);
         success = true;
-        
+
         // Rough gas estimation
         gasEstimate = 21000; // Base transaction cost
-        
-        for (uint256 i = 0; i < calls.length; i++) {
+
+        for (uint256 i = 0; i < len; ) {
             // Add estimated gas per call (rough estimate)
             gasEstimate += 50000 + calls[i].data.length * 16;
+            unchecked {
+                ++i;
+            }
         }
 
         return (success, results, gasEstimate);
@@ -351,10 +354,10 @@ contract BatchExecutor is Ownable, ReentrancyGuard {
      * @param relayer Address of the relayer
      * @param authorized Whether to authorize or revoke
      */
-    function setRelayerAuthorization(address relayer, bool authorized) 
-        external 
-        onlyOwner 
-    {
+    function setRelayerAuthorization(
+        address relayer,
+        bool authorized
+    ) external onlyOwner {
         authorizedRelayers[relayer] = authorized;
         emit RelayerAuthorized(relayer, authorized);
     }
@@ -410,7 +413,11 @@ contract BatchExecutor is Ownable, ReentrancyGuard {
      * @return totalSaved Total gas saved
      * @return batchCount Total batches executed
      */
-    function getGasStats() external view returns (uint256 totalSaved, uint256 batchCount) {
+    function getGasStats()
+        external
+        view
+        returns (uint256 totalSaved, uint256 batchCount)
+    {
         return (totalGasSaved, totalBatchesExecuted);
     }
 
@@ -419,26 +426,33 @@ contract BatchExecutor is Ownable, ReentrancyGuard {
     /**
      * @dev Execute an array of calls
      * @param calls Array of calls to execute
+     * @param sender The logical sender (msg.sender or meta-tx signer)
      * @return results Array of return data
      */
-    function _executeCalls(Call[] calldata calls) 
-        internal 
-        returns (bytes[] memory results) 
-    {
-        results = new bytes[](calls.length);
-        
-        for (uint256 i = 0; i < calls.length; i++) {
+    function _executeCalls(
+        Call[] calldata calls,
+        address sender
+    ) internal returns (bytes[] memory results) {
+        uint256 len = calls.length;
+        results = new bytes[](len);
+
+        for (uint256 i = 0; i < len; ) {
+            // Append sender to calldata (EIP-2771 trusted forwarder pattern)
+            // This allows target contracts using _msgSender() to identify the real user
             (bool success, bytes memory returnData) = calls[i].target.call{
                 value: calls[i].value
-            }(calls[i].data);
+            }(abi.encodePacked(calls[i].data, sender));
 
             if (!success) {
                 revert CallFailed(i, returnData);
             }
 
             results[i] = returnData;
-            
+
             emit CallExecuted(i, calls[i].target, success, returnData);
+            unchecked {
+                ++i;
+            }
         }
     }
 
@@ -448,9 +462,10 @@ contract BatchExecutor is Ownable, ReentrancyGuard {
      * @return Hash of the calls array
      */
     function _hashCalls(Call[] calldata calls) internal pure returns (bytes32) {
-        bytes32[] memory callHashes = new bytes32[](calls.length);
-        
-        for (uint256 i = 0; i < calls.length; i++) {
+        uint256 len = calls.length;
+        bytes32[] memory callHashes = new bytes32[](len);
+
+        for (uint256 i = 0; i < len; ) {
             callHashes[i] = keccak256(
                 abi.encode(
                     calls[i].target,
@@ -458,8 +473,11 @@ contract BatchExecutor is Ownable, ReentrancyGuard {
                     keccak256(calls[i].data)
                 )
             );
+            unchecked {
+                ++i;
+            }
         }
-        
+
         return keccak256(abi.encodePacked(callHashes));
     }
 

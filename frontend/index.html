@@ -49,6 +49,7 @@
             font-size: 2.5rem;
             background: linear-gradient(135deg, var(--primary), #a855f7);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 0.5rem;
         }
@@ -304,8 +305,8 @@
 <body>
     <div class="container">
         <header>
-            <h1>⛽ Gas Fee Optimizer</h1>
-            <p class="subtitle">Batch Transactions & Meta-Transaction System</p>
+            <h1>Gas Fee Optimizer</h1>
+            <p class="subtitle">Batch Transactions &amp; Meta-Transaction System</p>
             <span class="badge">Web3Assam - KRITI 2026</span>
         </header>
 
@@ -332,7 +333,7 @@
         <div class="grid">
             <!-- Connect Wallet Card -->
             <div class="card">
-                <h2><span class="icon">🔗</span> Connection</h2>
+                <h2><span class="icon"></span> Connection</h2>
                 <button id="connectBtn" class="primary">Connect Wallet</button>
                 <div class="input-group">
                     <label>BatchExecutor Address</label>
@@ -342,35 +343,118 @@
                     <label>SampleDApp Address</label>
                     <input type="text" id="sampleDAppAddr" placeholder="0x...">
                 </div>
-                <button id="autoLoadBtn" class="success">⚡ Auto-Load from Deployment</button>
+                <div class="input-group">
+                    <label>GasSponsor Address</label>
+                    <input type="text" id="gasSponsorAddr" placeholder="0x...">
+                </div>
+                <button id="autoLoadBtn" class="success">Auto-Load from Deployment</button>
                 <button id="loadContractsBtn" class="primary">Load Contracts (Manual)</button>
+            </div>
+
+            <!-- Sponsor Key Card -->
+            <div class="card">
+                <h2><span class="icon"></span> Sponsor Key</h2>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+                    Enter a sponsor key to unlock gasless meta-transactions. Without a valid key, you must pay gas
+                    yourself.
+                </p>
+                <div id="keyStatusInfo" class="batch-items" style="margin-bottom: 1rem;">
+                    <div class="batch-item">
+                        <span>Meta-Tx Access</span>
+                        <span id="whitelistStatus" style="color: var(--danger);">No Key</span>
+                    </div>
+                    <div class="batch-item">
+                        <span>Daily Tx Remaining</span>
+                        <span id="txRemaining" style="color: var(--text-muted);">&mdash;</span>
+                    </div>
+                    <div class="batch-item">
+                        <span>Daily Gas Remaining</span>
+                        <span id="gasRemaining" style="color: var(--text-muted);">&mdash;</span>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Sponsor Key</label>
+                    <input type="text" id="sponsorKeyInput" placeholder="Enter your sponsor key...">
+                </div>
+                <button id="redeemKeyBtn" class="success" disabled>Redeem Key</button>
+                <div id="keyResult"
+                    style="display: none; margin-top: 0.75rem; padding: 1rem; border-radius: 0.5rem; font-family: monospace; font-size: 0.85rem;">
+                </div>
             </div>
 
             <!-- Batch Builder Card -->
             <div class="card">
-                <h2><span class="icon">📦</span> Batch Builder</h2>
-                <div class="input-group">
-                    <label>Username (Profile Update)</label>
-                    <input type="text" id="username" placeholder="Enter username">
-                </div>
-                <div class="input-group">
-                    <label>Bio</label>
-                    <input type="text" id="bio" placeholder="Enter bio">
-                </div>
-                <div class="input-group">
-                    <label>Listing Name</label>
-                    <input type="text" id="listingName" placeholder="NFT Art #1">
-                </div>
-                <div class="input-group">
-                    <label>Listing Price (ETH)</label>
-                    <input type="number" id="listingPrice" placeholder="0.1" step="0.01">
-                </div>
-                <button id="addToBatchBtn" class="primary">Add Actions to Batch</button>
+                <h2><span class="icon"></span> Batch Builder</h2>
+
+                <details>
+                    <summary style="cursor:pointer;font-weight:600;margin-bottom:0.5rem">Profile</summary>
+                    <div class="input-group">
+                        <label>Username</label>
+                        <input type="text" id="username" placeholder="Enter username">
+                    </div>
+                    <div class="input-group">
+                        <label>Bio</label>
+                        <input type="text" id="bio" placeholder="Enter bio">
+                    </div>
+                </details>
+
+                <details>
+                    <summary style="cursor:pointer;font-weight:600;margin-bottom:0.5rem">Create
+                        Listing</summary>
+                    <div class="input-group">
+                        <label>Item Name</label>
+                        <input type="text" id="listingName" placeholder="NFT Art #1">
+                    </div>
+                    <div class="input-group">
+                        <label>Price (ETH)</label>
+                        <input type="number" id="listingPrice" placeholder="0.1" step="0.01">
+                    </div>
+                </details>
+
+                <details>
+                    <summary style="cursor:pointer;font-weight:600;margin-bottom:0.5rem">Update Listing
+                    </summary>
+                    <div class="input-group">
+                        <label>Listing ID</label>
+                        <input type="number" id="updateListingId" placeholder="0" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label>New Price (ETH)</label>
+                        <input type="number" id="updateListingPrice" placeholder="0.5" step="0.01">
+                    </div>
+                </details>
+
+                <details>
+                    <summary style="cursor:pointer;font-weight:600;margin-bottom:0.5rem">Place Bid</summary>
+                    <div class="input-group">
+                        <label>Listing ID to Bid On</label>
+                        <input type="number" id="bidListingId" placeholder="0" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label>Bid Amount (ETH)</label>
+                        <input type="number" id="bidAmount" placeholder="0.05" step="0.01">
+                    </div>
+                </details>
+
+                <details>
+                    <summary style="cursor:pointer;font-weight:600;margin-bottom:0.5rem">Deposit / Withdraw
+                    </summary>
+                    <div class="input-group">
+                        <label>Deposit Amount (ETH)</label>
+                        <input type="number" id="depositAmount" placeholder="1.0" step="0.01">
+                    </div>
+                    <div class="input-group">
+                        <label>Withdraw Amount (ETH)</label>
+                        <input type="number" id="withdrawAmount" placeholder="0.5" step="0.01">
+                    </div>
+                </details>
+
+                <button id="addToBatchBtn" class="primary" style="margin-top:1rem">Add Actions to Batch</button>
             </div>
 
             <!-- Pending Batch Card -->
             <div class="card">
-                <h2><span class="icon">📋</span> Pending Batch</h2>
+                <h2><span class="icon"></span> Pending Batch</h2>
                 <div id="batchItems" class="batch-items">
                     <p style="color: var(--text-muted); text-align: center;">No actions in batch</p>
                 </div>
@@ -381,7 +465,7 @@
 
             <!-- Gas Comparison Card -->
             <div class="card">
-                <h2><span class="icon">📊</span> Gas Savings</h2>
+                <h2><span class="icon"></span> Gas Savings</h2>
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div id="individualGas" class="value">0</div>
@@ -401,14 +485,14 @@
                     </div>
                 </div>
                 <div id="gasComparison" class="gas-comparison" style="display: none;">
-                    <h3>🎉 You Saved:</h3>
+                    <h3>You Saved:</h3>
                     <div id="totalSavings" class="savings">0 gas</div>
                 </div>
             </div>
 
             <!-- Activity Log Card -->
             <div class="card" style="grid-column: 1 / -1;">
-                <h2><span class="icon">📜</span> Activity Log</h2>
+                <h2><span class="icon"></span> Activity Log</h2>
                 <div id="logContainer" class="log-container">
                     <div class="log-entry info">Welcome to Gas Fee Optimizer! Connect your wallet to get started.</div>
                 </div>
@@ -427,6 +511,7 @@
         let signer = null;
         let batchExecutor = null;
         let sampleDApp = null;
+        let gasSponsorContract = null;
         let pendingCalls = [];
         let gasStats = {
             individual: 0,
@@ -445,8 +530,26 @@
         const SAMPLE_DAPP_ABI = [
             "function updateProfile(string username, string bio)",
             "function createListing(string itemName, uint256 price) returns (uint256)",
+            "function updateListing(uint256 listingId, uint256 newPrice)",
+            "function cancelListing(uint256 listingId)",
+            "function placeBid(uint256 listingId) payable",
+            "function deposit() payable",
+            "function withdraw(uint256 amount)",
             "function getProfile(address user) view returns (tuple(string username, string bio, uint256 reputation, uint256 totalTransactions, bool isVerified))",
-            "function getStats() view returns (uint256 totalListings, uint256 totalBids, uint256 contractBalance)"
+            "function getListing(uint256 listingId) view returns (tuple(address seller, string itemName, uint256 price, bool isActive, uint256 createdAt))",
+            "function getStats() view returns (uint256 totalListings, uint256 totalBids, uint256 contractBalance)",
+            "function nextListingId() view returns (uint256)"
+        ];
+
+        const GAS_SPONSOR_ABI = [
+            "function reimburseRelayer(address relayer, uint256 gasUsed, uint256 gasPrice)",
+            "function batchExecutor() view returns (address)",
+            "function owner() view returns (address)",
+            "function getStats() view returns (uint256 balance, uint256 totalGasSponsored, uint256 totalEthSpent, bool isActive)",
+            "function redeemKey(string key)",
+            "function getUserQuotaStatus(address user) view returns (uint256 totalSponsored, uint256 dailyRemaining, bool isWhitelisted, uint256 dailyTxRemaining)",
+            "function maxTxPerDay() view returns (uint16)",
+            "function whitelistOnly() view returns (bool)"
         ];
 
         // DOM Elements
@@ -458,6 +561,39 @@
         const clearBatchBtn = document.getElementById('clearBatchBtn');
         const logContainer = document.getElementById('logContainer');
         const batchItems = document.getElementById('batchItems');
+
+        // Try to parse clean errors from ethers.js revert blobs
+        function parseError(e) {
+            let msg = e.message || String(e);
+
+            // Try to extract standard text revert reasons
+            const match = msg.match(/reverted with reason string '([^']+)'/);
+            if (match) return match[1];
+
+            // Try to extract custom errors encoded as text string internally
+            // e.g. CallFailed(2, "0x...124c697374696e67206e6f742061637469766500...")
+            const customMatch = msg.match(/custom error 'CallFailed\(\d+,\s*"0x([a-fA-F0-9]+)"\)'/);
+            if (customMatch) {
+                try {
+                    // Extract the hex, strip standard encoding padding to find the string
+                    const hex = customMatch[1];
+                    let str = '';
+                    for (let i = 0; i < hex.length; i += 2) {
+                        const code = parseInt(hex.substr(i, 2), 16);
+                        if (code >= 32 && code <= 126) str += String.fromCharCode(code);
+                    }
+                    return "Batch Call Failed: " + str.trim();
+                } catch (err) { }
+            }
+
+            // Default extract the revert reason if present anywhere
+            if (msg.includes('reverted with custom error')) {
+                const parts = msg.split('reverted with custom error');
+                return parts[1].split('"')[1] || parts[1];
+            }
+
+            return msg.slice(0, 150) + '...';
+        }
 
         // Logging
         function log(message, type = 'info') {
@@ -513,7 +649,7 @@
                 signer = provider.getSigner();
 
                 log('Wallet connected successfully!', 'success');
-                connectBtn.textContent = 'Connected ✓';
+                connectBtn.textContent = 'Connected';
                 connectBtn.disabled = true;
 
                 await updateStatus();
@@ -549,8 +685,18 @@
                 await batchExecutor.getGasStats();
                 await sampleDApp.getStats();
 
+                // Load GasSponsor if address provided
+                const sponsorAddr = document.getElementById('gasSponsorAddr').value;
+                if (sponsorAddr) {
+                    gasSponsorContract = new ethers.Contract(sponsorAddr, GAS_SPONSOR_ABI, signer);
+                    await gasSponsorContract.getStats();
+                    log('GasSponsor contract loaded!', 'success');
+                    document.getElementById('redeemKeyBtn').disabled = false;
+                    updateQuotaDisplay();
+                }
+
                 log('Contracts loaded successfully!', 'success');
-                loadContractsBtn.textContent = 'Loaded ✓';
+                loadContractsBtn.textContent = 'Loaded';
 
             } catch (e) {
                 log('Failed to load contracts: ' + e.message, 'error');
@@ -558,7 +704,7 @@
         });
 
         // Update batch display
-        function updateBatchDisplay() {
+        function updateBatchDisplay(preserveGas = false) {
             if (pendingCalls.length === 0) {
                 batchItems.innerHTML = '<p style="color: var(--text-muted); text-align: center;">No actions in batch</p>';
                 executeBatchBtn.disabled = true;
@@ -574,9 +720,11 @@
                 executeMetaBtn.disabled = !batchExecutor;
             }
 
-            // Update estimated individual gas
-            const totalIndividual = pendingCalls.reduce((sum, c) => sum + c.estimatedGas + 21000, 0);
-            document.getElementById('individualGas').textContent = totalIndividual.toLocaleString();
+            // Update estimated individual gas only if not explicitly preserving it
+            if (!preserveGas) {
+                const totalIndividual = pendingCalls.reduce((sum, c) => sum + c.estimatedGas + 21000, 0);
+                document.getElementById('individualGas').textContent = totalIndividual.toLocaleString();
+            }
         }
 
         // Add to Batch
@@ -586,49 +734,93 @@
                 return;
             }
 
+            let added = 0;
+
+            // --- Profile Update ---
             const username = document.getElementById('username').value;
             const bio = document.getElementById('bio').value;
-            const listingName = document.getElementById('listingName').value;
-            const listingPrice = document.getElementById('listingPrice').value;
-
             if (username && bio) {
                 const data = sampleDApp.interface.encodeFunctionData('updateProfile', [username, bio]);
-                // Get REAL gas cost from the blockchain
                 let realGas = 95000;
                 try { realGas = (await sampleDApp.estimateGas.updateProfile(username, bio)).toNumber(); } catch (e) { }
-                pendingCalls.push({
-                    target: sampleDApp.address,
-                    value: 0,
-                    data: data,
-                    description: `Update Profile: ${username}`,
-                    estimatedGas: realGas
-                });
+                pendingCalls.push({ target: sampleDApp.address, value: 0, data, description: `Update Profile: ${username}`, estimatedGas: realGas });
                 log(`Added profile update: ${username} (gas: ${realGas.toLocaleString()})`, 'info');
+                added++;
             }
 
+            // --- Create Listing ---
+            const listingName = document.getElementById('listingName').value;
+            const listingPrice = document.getElementById('listingPrice').value;
             if (listingName && listingPrice) {
                 const price = ethers.utils.parseEther(listingPrice);
                 const data = sampleDApp.interface.encodeFunctionData('createListing', [listingName, price]);
-                // Get REAL gas cost from the blockchain
                 let realGas = 135000;
                 try { realGas = (await sampleDApp.estimateGas.createListing(listingName, price)).toNumber(); } catch (e) { }
-                pendingCalls.push({
-                    target: sampleDApp.address,
-                    value: 0,
-                    data: data,
-                    description: `Create Listing: ${listingName} (${listingPrice} ETH)`,
-                    estimatedGas: realGas
-                });
+                pendingCalls.push({ target: sampleDApp.address, value: 0, data, description: `Create Listing: ${listingName} (${listingPrice} ETH)`, estimatedGas: realGas });
                 log(`Added listing: ${listingName} (gas: ${realGas.toLocaleString()})`, 'info');
+                added++;
+            }
+
+            // --- Update Listing ---
+            const updateId = document.getElementById('updateListingId').value;
+            const updatePrice = document.getElementById('updateListingPrice').value;
+            if (updateId !== '' && updatePrice) {
+                const newPrice = ethers.utils.parseEther(updatePrice);
+                const data = sampleDApp.interface.encodeFunctionData('updateListing', [parseInt(updateId), newPrice]);
+                let realGas = 50000;
+                try { realGas = (await sampleDApp.estimateGas.updateListing(parseInt(updateId), newPrice)).toNumber(); } catch (e) { }
+                pendingCalls.push({ target: sampleDApp.address, value: 0, data, description: `Update Listing #${updateId} \u2192 ${updatePrice} ETH`, estimatedGas: realGas });
+                log(`Added listing update: #${updateId} (gas: ${realGas.toLocaleString()})`, 'info');
+                added++;
+            }
+
+            // --- Place Bid ---
+            const bidId = document.getElementById('bidListingId').value;
+            const bidAmt = document.getElementById('bidAmount').value;
+            if (bidId !== '' && bidAmt) {
+                const bidValue = ethers.utils.parseEther(bidAmt);
+                const data = sampleDApp.interface.encodeFunctionData('placeBid', [parseInt(bidId)]);
+                let realGas = 100000;
+                try { realGas = (await sampleDApp.estimateGas.placeBid(parseInt(bidId), { value: bidValue })).toNumber(); } catch (e) { }
+                pendingCalls.push({ target: sampleDApp.address, value: bidValue, data, description: `Bid ${bidAmt} ETH on Listing #${bidId}`, estimatedGas: realGas });
+                log(`Added bid: ${bidAmt} ETH on #${bidId} (gas: ${realGas.toLocaleString()})`, 'info');
+                added++;
+            }
+
+            // --- Deposit ---
+            const depositAmt = document.getElementById('depositAmount').value;
+            if (depositAmt) {
+                const depositValue = ethers.utils.parseEther(depositAmt);
+                const data = sampleDApp.interface.encodeFunctionData('deposit', []);
+                let realGas = 45000;
+                try { realGas = (await sampleDApp.estimateGas.deposit({ value: depositValue })).toNumber(); } catch (e) { }
+                pendingCalls.push({ target: sampleDApp.address, value: depositValue, data, description: `Deposit ${depositAmt} ETH`, estimatedGas: realGas });
+                log(`Added deposit: ${depositAmt} ETH (gas: ${realGas.toLocaleString()})`, 'info');
+                added++;
+            }
+
+            // --- Withdraw ---
+            const withdrawAmt = document.getElementById('withdrawAmount').value;
+            if (withdrawAmt) {
+                const weiAmt = ethers.utils.parseEther(withdrawAmt);
+                const data = sampleDApp.interface.encodeFunctionData('withdraw', [weiAmt]);
+                let realGas = 40000;
+                try { realGas = (await sampleDApp.estimateGas.withdraw(weiAmt)).toNumber(); } catch (e) { }
+                pendingCalls.push({ target: sampleDApp.address, value: 0, data, description: `Withdraw ${withdrawAmt} ETH`, estimatedGas: realGas });
+                log(`Added withdraw: ${withdrawAmt} ETH (gas: ${realGas.toLocaleString()})`, 'info');
+                added++;
+            }
+
+            if (added === 0) {
+                log('Fill in at least one action above, then click Add', 'error');
+                return;
             }
 
             updateBatchDisplay();
 
-            // Clear inputs
-            document.getElementById('username').value = '';
-            document.getElementById('bio').value = '';
-            document.getElementById('listingName').value = '';
-            document.getElementById('listingPrice').value = '';
+            // Clear all inputs
+            ['username', 'bio', 'listingName', 'listingPrice', 'updateListingId', 'updateListingPrice', 'bidListingId', 'bidAmount', 'depositAmount', 'withdrawAmount']
+                .forEach(id => document.getElementById(id).value = '');
         });
 
         // Execute Batch
@@ -646,7 +838,15 @@
                     data: c.data
                 }));
 
-                const tx = await batchExecutor.executeBatch(calls);
+                // Sum up ETH needed for payable calls (bids, deposits)
+                const totalValue = pendingCalls.reduce((sum, c) => {
+                    if (c.value && c.value.toString() !== '0') {
+                        return sum.add(c.value);
+                    }
+                    return sum;
+                }, ethers.BigNumber.from(0));
+
+                const tx = await batchExecutor.executeBatch(calls, { value: totalValue });
                 log(`Transaction submitted: ${tx.hash}`, 'info');
 
                 const receipt = await tx.wait();
@@ -666,10 +866,12 @@
                 document.getElementById('totalSavings').textContent = saved.toLocaleString() + ' gas';
 
                 pendingCalls = [];
-                updateBatchDisplay();
+                updateBatchDisplay(true); // Preserve Individual Gas total to compare against
 
             } catch (e) {
-                log('Batch execution failed: ' + e.message, 'error');
+                const cleanError = parseError(e);
+                log('Batch execution failed: ' + cleanError, 'error');
+                alert('Transaction Failed:\n\n' + cleanError);
             } finally {
                 executeBatchBtn.textContent = 'Execute Batch (Direct)';
                 executeBatchBtn.disabled = pendingCalls.length === 0;
@@ -703,7 +905,13 @@
                     data: c.data
                 }));
 
-                const tx = await batchExecutor.executeBatch(calls);
+                // Sum up ETH needed for payable calls (bids, deposits)
+                const totalValue = pendingCalls.reduce((sum, c) => {
+                    if (c.value && c.value.toString() !== '0') return sum.add(c.value);
+                    return sum;
+                }, ethers.BigNumber.from(0));
+
+                const tx = await batchExecutor.executeBatch(calls, { value: totalValue });
                 const receipt = await tx.wait();
 
                 log(`Meta-transaction simulated! Gas: ${receipt.gasUsed.toString()}`, 'success');
@@ -713,7 +921,9 @@
                 updateBatchDisplay();
 
             } catch (e) {
-                log('Meta-tx failed: ' + e.message, 'error');
+                const cleanError = parseError(e);
+                log('Meta-tx failed: ' + cleanError, 'error');
+                alert('Meta-Transaction Failed:\n\n' + cleanError);
             } finally {
                 executeMetaBtn.textContent = 'Execute as Meta-Tx (Gasless Simulation)';
                 executeMetaBtn.disabled = pendingCalls.length === 0;
@@ -740,7 +950,10 @@
 
                 document.getElementById('batchExecutorAddr').value = deployment.contracts.BatchExecutor;
                 document.getElementById('sampleDAppAddr').value = deployment.contracts.SampleDApp;
-                log('Addresses loaded: BatchExecutor & SampleDApp', 'success');
+                if (deployment.contracts.GasSponsor) {
+                    document.getElementById('gasSponsorAddr').value = deployment.contracts.GasSponsor;
+                }
+                log('Addresses loaded: BatchExecutor, SampleDApp & GasSponsor', 'success');
 
                 // Auto-click load if wallet is connected
                 if (signer) {
@@ -752,6 +965,103 @@
                 log('Auto-load failed: ' + e.message, 'error');
             }
         }
+
+        // ============ SPONSOR KEY REDEMPTION ============
+
+        async function updateQuotaDisplay() {
+            if (!gasSponsorContract || !signer) return;
+            try {
+                const userAddr = await signer.getAddress();
+                const quota = await gasSponsorContract.getUserQuotaStatus(userAddr);
+
+                const whitelistEl = document.getElementById('whitelistStatus');
+                if (quota.isWhitelisted) {
+                    whitelistEl.textContent = 'Key Active';
+                    whitelistEl.style.color = 'var(--success)';
+                } else {
+                    whitelistEl.textContent = 'No Key';
+                    whitelistEl.style.color = 'var(--danger)';
+                }
+
+                const txRem = document.getElementById('txRemaining');
+                if (quota.dailyTxRemaining.gt(1000000)) {
+                    txRem.textContent = 'Unlimited';
+                } else {
+                    txRem.textContent = quota.dailyTxRemaining.toString() + ' tx';
+                }
+                txRem.style.color = quota.dailyTxRemaining.gt(0) ? 'var(--success)' : 'var(--danger)';
+
+                const gasRem = document.getElementById('gasRemaining');
+                gasRem.textContent = parseInt(quota.dailyRemaining).toLocaleString() + ' gas';
+                gasRem.style.color = quota.dailyRemaining.gt(0) ? 'var(--success)' : 'var(--danger)';
+
+            } catch (e) {
+                console.error('Quota display error:', e);
+            }
+        }
+
+        document.getElementById('redeemKeyBtn').addEventListener('click', async () => {
+            if (!gasSponsorContract) {
+                log('GasSponsor not loaded', 'error');
+                return;
+            }
+
+            const keyInput = document.getElementById('sponsorKeyInput').value.trim();
+            if (!keyInput) {
+                log('Please enter a sponsor key', 'error');
+                return;
+            }
+
+            const resultDiv = document.getElementById('keyResult');
+            resultDiv.style.display = 'block';
+            const btn = document.getElementById('redeemKeyBtn');
+            btn.disabled = true;
+            btn.textContent = 'Redeeming...';
+
+            try {
+                log(`Attempting to redeem key: "${keyInput}"...`, 'info');
+
+                const tx = await gasSponsorContract.redeemKey(keyInput);
+                log('Transaction submitted, waiting for confirmation...', 'info');
+                await tx.wait();
+
+                resultDiv.style.background = 'rgba(16, 185, 129, 0.15)';
+                resultDiv.style.border = '1px solid var(--success)';
+                'You now have access to sponsored meta-transactions.<br>' +
+                    'Your daily transaction quota has been activated.';
+                log('Sponsor key redeemed! You now have meta-tx access.', 'success');
+
+                // Refresh quota display
+                await updateQuotaDisplay();
+
+            } catch (e) {
+                const errorMsg = e.message || '';
+                if (errorMsg.includes('InvalidSponsorKey')) {
+                    resultDiv.style.background = 'rgba(239, 68, 68, 0.15)';
+                    resultDiv.style.border = '1px solid var(--danger)';
+                    resultDiv.innerHTML = '<strong>Invalid Key!</strong><br><br>' +
+                        'The key you entered is incorrect.<br>' +
+                        'Contact the sponsor admin for a valid key.';
+                    log('Invalid sponsor key!', 'error');
+                } else if (errorMsg.includes('AlreadyWhitelisted')) {
+                    resultDiv.style.background = 'rgba(245, 158, 11, 0.15)';
+                    resultDiv.style.border = '1px solid var(--warning)';
+                    resultDiv.innerHTML = '<strong>Key Already Active</strong><br><br>' +
+                        'Your address already has meta-tx access. No action needed.';
+                    log('Key already active!', 'info');
+                } else {
+                    resultDiv.style.background = 'rgba(239, 68, 68, 0.15)';
+                    resultDiv.style.border = '1px solid var(--danger)';
+                    resultDiv.innerHTML = '<strong>Error:</strong><br><code>' + errorMsg.slice(0, 200) + '</code>';
+                    log('Key redemption failed: ' + errorMsg, 'error');
+                }
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Redeem Key';
+            }
+        });
+
+        // ============ INIT ============
 
         // Initialize
         updateBatchDisplay();

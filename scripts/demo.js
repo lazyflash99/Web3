@@ -17,13 +17,13 @@ async function main() {
   console.log("============================================\n");
 
   const [user, relayer] = await hre.ethers.getSigners();
-  
+
   console.log("User address:", user.address);
   console.log("Relayer address:", relayer?.address || user.address);
 
   // Load deployment info
   const deploymentFile = path.join(__dirname, "..", "deployments", "hardhat.json");
-  
+
   let contracts;
   if (fs.existsSync(deploymentFile)) {
     contracts = JSON.parse(fs.readFileSync(deploymentFile)).contracts;
@@ -33,7 +33,7 @@ async function main() {
     const BatchExecutor = await hre.ethers.getContractFactory("BatchExecutor");
     const batchExecutor = await BatchExecutor.deploy();
     const SampleDApp = await hre.ethers.getContractFactory("SampleDApp");
-    const sampleDApp = await SampleDApp.deploy();
+    const sampleDApp = await SampleDApp.deploy(await batchExecutor.getAddress());
     contracts = {
       BatchExecutor: await batchExecutor.getAddress(),
       SampleDApp: await sampleDApp.getAddress()
@@ -43,7 +43,7 @@ async function main() {
   // Get contract instances
   const batchExecutor = await hre.ethers.getContractAt("BatchExecutor", contracts.BatchExecutor);
   const sampleDApp = await hre.ethers.getContractAt("SampleDApp", contracts.SampleDApp);
-  
+
   console.log("\nContracts loaded:");
   console.log("- BatchExecutor:", contracts.BatchExecutor);
   console.log("- SampleDApp:", contracts.SampleDApp);
@@ -182,7 +182,7 @@ async function main() {
 
   // Hash the calls array
   function hashCalls(calls) {
-    const callHashes = calls.map(call => 
+    const callHashes = calls.map(call =>
       hre.ethers.keccak256(
         hre.ethers.AbiCoder.defaultAbiCoder().encode(
           ["address", "uint256", "bytes32"],
@@ -194,7 +194,7 @@ async function main() {
   }
 
   const callsHash = hashCalls(batchRequest.calls);
-  
+
   const value = {
     from: batchRequest.from,
     callsHash: callsHash,
@@ -204,14 +204,14 @@ async function main() {
 
   console.log("User signing meta-transaction off-chain...");
   console.log("(No gas required for signing!)");
-  
+
   const signature = await user.signTypedData(domain, types, value);
   console.log("✅ Signature created:", signature.slice(0, 20) + "...");
 
   // Relayer submits the transaction
   console.log("\nRelayer submitting transaction on-chain...");
   const signerToUse = relayer || user;
-  
+
   const userBalanceBefore = await hre.ethers.provider.getBalance(user.address);
   const relayerBalanceBefore = await hre.ethers.provider.getBalance(signerToUse.address);
 
