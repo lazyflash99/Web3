@@ -1,4 +1,4 @@
-# ⛽ Gas Fee Optimizer & Batch Transaction System
+# Gas Fee Optimizer & Batch Transaction System
 
 > A comprehensive solution for reducing Ethereum gas costs and improving user experience through transaction batching, meta-transactions, and gas sponsorship.
 
@@ -10,7 +10,7 @@
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Overview](#overview)
 - [Features](#features)
@@ -28,7 +28,7 @@
 
 ---
 
-## 🎯 Overview
+## Overview
 
 Ethereum transactions require users to pay gas fees for every on-chain action. This creates significant friction:
 
@@ -44,18 +44,18 @@ This project solves these problems by implementing:
 
 ---
 
-## ✨ Features
+## Features
 
 ### Core Features
 
 | Feature | Description |
 |---------|-------------|
-| 🔄 **Batch Execution** | Combine multiple contract calls into one transaction |
-| ✍️ **Meta-Transactions** | Gasless transactions via EIP-712 signatures |
-| 💰 **Gas Sponsorship** | Full or partial gas fee subsidization |
-| 🔐 **Replay Protection** | Nonce-based protection against replay attacks |
-| ⏰ **Deadlines** | Time-limited transaction validity |
-| 👥 **Relayer System** | Decentralized transaction submission |
+| **Batch Execution** | Combine multiple contract calls into one transaction |
+| **Meta-Transactions** | Gasless transactions via EIP-712 signatures |
+| **Gas Sponsorship** | Full or partial gas fee subsidization |
+| **Replay Protection** | Nonce-based protection against replay attacks |
+| **Deadlines** | Time-limited transaction validity |
+| **Relayer System** | Decentralized transaction submission |
 
 ### Technical Features
 
@@ -73,15 +73,15 @@ This project solves these problems by implementing:
 
 | Feature | Description |
 |---------|-------------|
-| 🔄 **Multicall3** | Industry-standard batching contract |
-| ⚡ **Circuit Breaker** | Emergency stop pattern for security |
-| 📈 **Gas Price Oracle** | Track and predict optimal gas prices |
-| 🔧 **Upgradeable Contracts** | UUPS proxy pattern for future upgrades |
-| 🎫 **Permit Tokens** | ERC20 with gasless approval support |
+| **Multicall3** | Industry-standard batching contract |
+| **Circuit Breaker** | Emergency stop pattern for security |
+| **Gas Price Oracle** | Track and predict optimal gas prices |
+| **Upgradeable Contracts** | UUPS proxy pattern for future upgrades |
+| **Permit Tokens** | ERC20 with gasless approval support |
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
 # Clone and install
@@ -105,7 +105,7 @@ npx hardhat run scripts/demo.js --network localhost
 
 ---
 
-## 📦 Installation
+## Installation
 
 ### Prerequisites
 
@@ -137,7 +137,7 @@ ETHERSCAN_API_KEY=your_etherscan_key_here
 
 ---
 
-## 📖 Usage
+## Usage
 
 ### 1. Direct Batch Execution
 
@@ -222,7 +222,7 @@ await gasSponsor.setRelayer(relayer.address, true);
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed architecture documentation.
 
@@ -243,7 +243,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed architecture docum
 
 ---
 
-## 📜 Smart Contracts
+## Smart Contracts
 
 ### Contract Files
 
@@ -301,7 +301,7 @@ function setRelayer(address relayer, bool active) external
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ### Run All Tests
 
@@ -345,7 +345,7 @@ npx hardhat coverage
       ✓ should open circuit on guardian call
       ...
     Performance Benchmarks
-      📊 Gas Savings at Different Batch Sizes:
+      Gas Savings at Different Batch Sizes:
          Batch Size 5:  12% savings
          Batch Size 10: 15% savings
          Batch Size 20: 17% savings
@@ -367,7 +367,7 @@ npx hardhat coverage
     Gas Savings Comparison
         ✓ should demonstrate gas savings from batching
 
-    📊 Gas Comparison Results:
+    Gas Comparison Results:
     Individual transactions total: 656,652 gas
     Batched transaction total:     619,126 gas
     Gas saved:                     37,526 gas (5%)
@@ -377,7 +377,7 @@ npx hardhat coverage
 
 ---
 
-## 📊 Gas Savings Demo
+## Gas Savings Demo
 
 Run the demo script to see gas savings in action:
 
@@ -399,14 +399,14 @@ Tx 2: Creating listing 1...   Gas used: 89,456
 Tx 3: Creating listing 2...   Gas used: 72,345
 Tx 4: Creating listing 3...   Gas used: 72,345
 
-📊 Total gas for 4 individual transactions: 279,380
+Total gas for 4 individual transactions: 279,380
 
 DEMO 2: Batched Transactions
 ============================================
 Executing batch with 4 calls...
    Gas used: 196,567
 
-📊 Gas Comparison:
+Gas Comparison:
    Individual transactions: 279,380 gas
    Batched transaction:     196,567 gas
    Gas saved:               82,813 gas (30%)
@@ -415,21 +415,21 @@ DEMO 3: Meta-Transaction (Gasless)
 ============================================
 User signing meta-transaction off-chain...
 (No gas required for signing!)
-✅ Signature created: 0x8a7b...
+Signature created: 0x8a7b...
 
 Relayer submitting transaction on-chain...
-✅ Meta-transaction executed! Gas used: 185,432
+Meta-transaction executed! Gas used: 185,432
 
-📊 Balance Changes:
+Balance Changes:
    User balance change:    0 ETH
    Relayer balance change: -0.00185 ETH
 
-✅ User paid ZERO gas! Relayer covered the cost.
+User paid ZERO gas! Relayer covered the cost.
 ```
 
 ---
 
-## 🔒 Security
+## Security
 
 ### Security Features
 
@@ -457,7 +457,7 @@ Relayer submitting transaction on-chain...
 
 ### Security Considerations
 
-⚠️ **Important Security Notes:**
+**Important Security Notes:**
 
 1. **Relayer Trust**: While relayers cannot forge signatures, they can choose not to relay transactions (liveness concern). Use multiple relayers for redundancy.
 
@@ -474,7 +474,7 @@ Relayer submitting transaction on-chain...
 
 ---
 
-## ⚠️ Limitations
+## Limitations
 
 ### Current Limitations
 
@@ -508,7 +508,7 @@ Relayer submitting transaction on-chain...
 
 ---
 
-## 🗂️ Project Structure
+## Project Structure
 
 ```
 web3/
@@ -562,7 +562,7 @@ web3/
 
 ---
 
-## 🌐 Frontend
+## Frontend
 
 A web interface is provided in `frontend/`:
 
@@ -589,7 +589,7 @@ A web interface is provided in `frontend/`:
 
 ---
 
-## 📦 TypeScript SDK
+## TypeScript SDK
 
 A TypeScript SDK is provided for easy integration in `sdk/GasOptimizerSDK.ts`:
 
@@ -615,7 +615,7 @@ await sdk.relayBatch(batch.getCalls(), deadline, signature);
 
 ---
 
-## 🔄 Relayer Service
+## Relayer Service
 
 A Node.js relayer service is provided in `relayer/`:
 
@@ -655,7 +655,7 @@ curl -X POST http://localhost:3000/relay/batch \
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please:
 
@@ -667,13 +667,13 @@ Contributions are welcome! Please:
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License.
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - [OpenZeppelin](https://openzeppelin.com/) - Security libraries
 - [Hardhat](https://hardhat.org/) - Development framework
@@ -682,10 +682,10 @@ This project is licensed under the MIT License.
 
 ---
 
-## 📞 Contact
+## Contact
 
 For questions or support, please open an issue on GitHub.
 
 ---
 
-**Built with ❤️ for Web3Assam KRITI 2026**
+**Built for Web3Assam KRITI 2026**
