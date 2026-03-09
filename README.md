@@ -4,7 +4,6 @@
 
 **Built for KRITI 2026 - Web3Assam**
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Solidity](https://img.shields.io/badge/solidity-0.8.24-purple.svg)
 ![Hardhat](https://img.shields.io/badge/hardhat-2.x-yellow.svg)
 
@@ -24,7 +23,6 @@
 - [Security](#security)
 - [Limitations](#limitations)
 - [Contributing](#contributing)
-- [License](#license)
 
 ---
 
@@ -664,12 +662,6 @@ Contributions are welcome! Please:
 3. Make your changes
 4. Run tests: `npx hardhat test`
 5. Submit a pull request
-
----
-
-## License
-
-This project is licensed under the MIT License.
 
 ---
 
