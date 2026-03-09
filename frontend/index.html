@@ -48,7 +48,9 @@
             font-size: 2.5rem;
             background: linear-gradient(135deg, var(--primary), #a855f7);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
+            color: transparent;
             margin-bottom: 0.5rem;
         }
 
@@ -519,13 +521,34 @@
             }
         });
 
+        // Auto-load deployment addresses
+        async function loadDeployment() {
+            try {
+                const res = await fetch('/deployments/localhost.json');
+                if (res.ok) {
+                    const info = await res.json();
+                    document.getElementById('batchExecutorAddr').value = info.contracts.BatchExecutor;
+                    document.getElementById('sampleDAppAddr').value = info.contracts.SampleDApp;
+                    log('Auto-loaded deployment addresses from localhost.json', 'info');
+                }
+            } catch (e) {
+                // Not available, user enters manually
+            }
+        }
+        loadDeployment();
+
         // Load Contracts
         loadContractsBtn.addEventListener('click', async () => {
-            const batchAddr = document.getElementById('batchExecutorAddr').value;
-            const dappAddr = document.getElementById('sampleDAppAddr').value;
+            const batchAddr = document.getElementById('batchExecutorAddr').value.trim();
+            const dappAddr = document.getElementById('sampleDAppAddr').value.trim();
 
             if (!batchAddr || !dappAddr) {
                 log('Please enter both contract addresses', 'error');
+                return;
+            }
+
+            if (!ethers.utils.isAddress(batchAddr) || !ethers.utils.isAddress(dappAddr)) {
+                log('Invalid address format', 'error');
                 return;
             }
 
@@ -574,10 +597,20 @@
                 return;
             }
 
-            const username = document.getElementById('username').value;
-            const bio = document.getElementById('bio').value;
-            const listingName = document.getElementById('listingName').value;
-            const listingPrice = document.getElementById('listingPrice').value;
+            const username = document.getElementById('username').value.trim();
+            const bio = document.getElementById('bio').value.trim();
+            const listingName = document.getElementById('listingName').value.trim();
+            const listingPrice = document.getElementById('listingPrice').value.trim();
+
+            if (!username && !bio && !listingName && !listingPrice) {
+                log('Please fill in at least one form field', 'error');
+                return;
+            }
+
+            if (listingPrice && (isNaN(parseFloat(listingPrice)) || parseFloat(listingPrice) <= 0)) {
+                log('Listing price must be a positive number', 'error');
+                return;
+            }
 
             if (username && bio) {
                 const data = sampleDApp.interface.encodeFunctionData('updateProfile', [username, bio]);
@@ -663,33 +696,87 @@
             if (pendingCalls.length === 0) return;
 
             try {
-                log('Preparing meta-transaction (gasless simulation)...', 'info');
+                log('Preparing EIP-712 meta-transaction...', 'info');
                 executeMetaBtn.textContent = 'Signing...';
                 executeMetaBtn.disabled = true;
-
-                // Note: This is a simulation since we need a relayer
-                // In production, this signature would be sent to a relayer service
 
                 const address = await signer.getAddress();
                 const nonce = await batchExecutor.getNonce(address);
                 const deadline = Math.floor(Date.now() / 1000) + 3600;
 
-                log(`User nonce: ${nonce.toString()}`, 'info');
-                log('In production, this signature would be sent to a relayer service.', 'info');
-                log('The relayer would execute the transaction and pay the gas.', 'info');
+                log(`Step 1: Fetched user nonce: ${nonce.toString()}`, 'info');
 
-                // For demo, we'll just execute directly but log the meta-tx flow
+                // Build EIP-712 typed data
+                const domain = {
+                    name: 'GasOptimizer',
+                    version: '1',
+                    chainId: (await provider.getNetwork()).chainId,
+                    verifyingContract: batchExecutor.address
+                };
+
                 const calls = pendingCalls.map(c => ({
                     target: c.target,
                     value: c.value,
                     data: c.data
                 }));
 
-                const tx = await batchExecutor.executeBatch(calls);
+                // Hash the calls for the batch type
+                const callsEncoded = ethers.utils.defaultAbiCoder.encode(
+                    ['tuple(address target, uint256 value, bytes data)[]'],
+                    [calls]
+                );
+                const callsHash = ethers.utils.keccak256(callsEncoded);
+
+                const types = {
+                    BatchExecution: [
+                        { name: 'from', type: 'address' },
+                        { name: 'callsHash', type: 'bytes32' },
+                        { name: 'nonce', type: 'uint256' },
+                        { name: 'deadline', type: 'uint256' }
+                    ]
+                };
+
+                const value = {
+                    from: address,
+                    callsHash: callsHash,
+                    nonce: nonce,
+                    deadline: deadline
+                };
+
+                log('Step 2: Requesting EIP-712 signature (check MetaMask)...', 'info');
+                const signature = await signer._signTypedData(domain, types, value);
+                log(`Step 3: Signature obtained (${signature.slice(0, 20)}...)`, 'success');
+
+                // Build the BatchRequest struct for the contract
+                const batchRequest = {
+                    from: address,
+                    calls: calls,
+                    nonce: nonce,
+                    deadline: deadline
+                };
+
+                log('Step 4: Submitting meta-transaction via executeBatchMeta...', 'info');
+                log('Note: In production, a relayer would submit this — the USER pays ZERO gas.', 'info');
+
+                // Call executeBatchMeta with the request and signature
+                // In production, the relayer (a separate account) calls this
+                // For demo, the connected wallet acts as its own relayer
+                const tx = await batchExecutor.executeBatchMeta(batchRequest, signature);
                 const receipt = await tx.wait();
 
-                log(`Meta-transaction simulated! Gas: ${receipt.gasUsed.toString()}`, 'success');
-                log('In a real gasless scenario, the user pays ZERO gas!', 'success');
+                // Update gas stats
+                gasStats.individual = pendingCalls.reduce((sum, c) => sum + c.estimatedGas + 21000, 0);
+                gasStats.batched = receipt.gasUsed.toNumber();
+                document.getElementById('batchedGas').textContent = gasStats.batched.toLocaleString();
+                const saved = gasStats.individual - gasStats.batched;
+                document.getElementById('gasSaved').textContent = saved.toLocaleString();
+                document.getElementById('savingsPercent').textContent =
+                    Math.round((saved / gasStats.individual) * 100) + '%';
+                document.getElementById('gasComparison').style.display = 'block';
+                document.getElementById('totalSavings').textContent = saved.toLocaleString() + ' gas';
+
+                log(`Meta-tx executed via executeBatchMeta! Gas used: ${receipt.gasUsed.toString()}`, 'success');
+                log('In a real deployment, a separate relayer account pays this gas — the USER pays ZERO.', 'success');
 
                 pendingCalls = [];
                 updateBatchDisplay();

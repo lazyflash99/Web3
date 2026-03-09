@@ -255,6 +255,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed architecture docum
 | `MetaTxRecipient.sol` | Base contract for meta-tx recipients |
 | `GaslessToken.sol` | Example ERC20 with meta-tx support |
 | `SampleDApp.sol` | Demo application for testing |
+| `SampleDAppMeta.sol` | EIP-2771 compatible demo dApp with meta-tx support |
 | `Multicall3.sol` | Industry-standard batching (aggregate, tryAggregate) |
 | `PermitToken.sol` | ERC20 with EIP-2612 gasless approvals |
 | `CircuitBreaker.sol` | Emergency stop pattern with rate limiting |
@@ -518,6 +519,7 @@ web3/
 │   ├── MetaTxRecipient.sol         # Base for meta-tx recipients
 │   ├── GaslessToken.sol            # Example gasless ERC20
 │   ├── SampleDApp.sol              # Demo application
+│   ├── SampleDAppMeta.sol          # EIP-2771 compatible demo dApp
 │   ├── AccountAbstraction/         # EIP-4337 contracts
 │   │   ├── EntryPoint.sol          # Account abstraction entry point
 │   │   ├── SimpleAccount.sol       # Smart contract wallet
@@ -528,6 +530,8 @@ web3/
 │   │   └── PermitToken.sol         # ERC20 with EIP-2612 permit
 │   ├── security/
 │   │   └── CircuitBreaker.sol      # Emergency stop pattern
+│   ├── test/
+│   │   └── Counter.sol             # Simple test helper contract
 │   ├── upgradeable/
 │   │   └── BatchExecutorUpgradeable.sol  # UUPS upgradeable version
 │   └── utils/
@@ -539,7 +543,8 @@ web3/
 │   ├── GasOptimizer.test.js        # Core functionality tests
 │   └── Advanced.test.js            # Advanced features tests
 ├── frontend/
-│   └── index.html                  # Web interface
+│   ├── index.html                  # Web interface
+│   └── serve.js                    # Local development server
 ├── sdk/
 │   └── GasOptimizerSDK.ts          # TypeScript SDK
 ├── relayer/
@@ -547,7 +552,9 @@ web3/
 │   └── package.json                # Relayer dependencies
 ├── docs/
 │   ├── ARCHITECTURE.md             # System architecture
-│   └── COMPLETE_GUIDE.md           # Comprehensive learning guide
+│   ├── COMPLETE_GUIDE.md           # Comprehensive learning guide
+│   ├── PRESENTATION_GUIDE.md       # Demo walkthrough & presentation tips
+│   └── TECHNICAL_DEEP_DIVE.md      # In-depth technical documentation
 ├── hardhat.config.js               # Hardhat configuration
 ├── package.json
 └── README.md
@@ -557,7 +564,7 @@ web3/
 
 ## 🌐 Frontend
 
-A simple web interface is provided in `frontend/index.html`:
+A web interface is provided in `frontend/`:
 
 1. Start local Hardhat node:
    ```bash
@@ -569,11 +576,16 @@ A simple web interface is provided in `frontend/index.html`:
    npx hardhat run scripts/deploy.js --network localhost
    ```
 
-3. Open `frontend/index.html` in a browser
+3. Start the frontend server:
+   ```bash
+   node frontend/serve.js
+   ```
 
-4. Connect MetaMask to localhost:8545
+4. Open `http://localhost:8080` in your browser
 
-5. Enter contract addresses and start batching!
+5. Connect MetaMask to localhost:8545
+
+6. Contract addresses auto-load from deployment — start batching!
 
 ---
 

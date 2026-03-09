@@ -19,7 +19,7 @@ artifacts/
 Thumbs.db
 
 # Deployments (local only)
-deployments/hardhat.json
+deployments/
 
 # Coverage
 coverage/
@@ -28,6 +28,12 @@ coverage.json
 # TypeChain
 typechain/
 typechain-types/
+
+# Playwright MCP
+.playwright-mcp/
+
+# Screenshots
+*.png
 
 # Docs - private learning guide
 docs/COMPLETE_GUIDE.md
