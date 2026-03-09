@@ -85,7 +85,7 @@ This project solves these problems by implementing:
 
 ```bash
 # Clone and install
-git clone <repository>
+git clone https://github.com/Ask-812/Web3.git
 cd web3
 npm install
 
