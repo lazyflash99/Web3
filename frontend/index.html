@@ -944,8 +944,8 @@
         async function autoLoadContracts() {
             try {
                 log('Fetching deployment info from server...', 'info');
-                const res = await fetch('/api/deployments/localhost');
-                if (!res.ok) throw new Error('No local deployment found. Run: npm run deploy:local');
+                const res = await fetch('https://web3-qaa5.onrender.com/api/deployments/localhost');
+                if (!res.ok) throw new Error('Could not fetch deployments from the live relayer server');
                 const deployment = await res.json();
 
                 document.getElementById('batchExecutorAddr').value = deployment.contracts.BatchExecutor;
@@ -1027,7 +1027,8 @@
 
                 resultDiv.style.background = 'rgba(16, 185, 129, 0.15)';
                 resultDiv.style.border = '1px solid var(--success)';
-                'You now have access to sponsored meta-transactions.<br>' +
+                resultDiv.innerHTML = '<strong>Key Accepted!</strong><br><br>' +
+                    'You now have access to sponsored meta-transactions.<br>' +
                     'Your daily transaction quota has been activated.';
                 log('Sponsor key redeemed! You now have meta-tx access.', 'success');
 

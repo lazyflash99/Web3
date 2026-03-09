@@ -74,8 +74,8 @@ async function main() {
   }
 
   // Fund the GasSponsor with some ETH
-  console.log("- Funding GasSponsor with 1 ETH...");
-  await gasSponsor.deposit({ value: hre.ethers.parseEther("1") });
+  console.log("- Funding GasSponsor with 0.05 ETH...");
+  await gasSponsor.deposit({ value: hre.ethers.parseEther("0.05") });
 
   // Set up sponsor key system
   console.log("- Setting sponsor key (KRITI2026)...");

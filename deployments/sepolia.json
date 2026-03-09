@@ -1,0 +1,12 @@
+{
+  "network": "sepolia",
+  "chainId": "11155111",
+  "contracts": {
+    "BatchExecutor": "0xefE28bF7F54686d98ACf463956D87cB10bFF2B80",
+    "GasSponsor": "0x6F075E86172aFEeE7Ef13f1e529bC1707f3f5293",
+    "Forwarder": "0x9A47F72E52d848C8C6B43925bAcAD980444914ad",
+    "GaslessToken": "0x1De43F92a2C480795a8Dd5a7B6912bE2B4381c13",
+    "SampleDApp": "0xd8439dC94a670173b50f6A1e576693382C68ae3D"
+  },
+  "deployer": "0xDa8be1Db8809dC68e248822B811b7f7b7fC7730D"
+}
