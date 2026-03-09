@@ -333,6 +333,10 @@
                     <label>SampleDApp Address</label>
                     <input type="text" id="sampleDAppAddr" placeholder="0x...">
                 </div>
+                <div class="input-group">
+                    <label>Relayer URL</label>
+                    <input type="text" id="relayerUrl" placeholder="http://localhost:3000" value="http://localhost:3000">
+                </div>
                 <button id="loadContractsBtn" class="primary">Load Contracts</button>
             </div>
 
@@ -365,7 +369,7 @@
                     <p style="color: var(--text-muted); text-align: center;">No actions in batch</p>
                 </div>
                 <button id="executeBatchBtn" class="success" disabled>Execute Batch (Direct)</button>
-                <button id="executeMetaBtn" class="warning" disabled>Execute as Meta-Tx (Gasless Simulation)</button>
+                <button id="executeMetaBtn" class="warning" disabled>Execute as Meta-Tx (via Relayer)</button>
                 <button id="clearBatchBtn" class="primary">Clear Batch</button>
             </div>
 
@@ -562,6 +566,21 @@
 
                 log('Contracts loaded successfully!', 'success');
                 loadContractsBtn.textContent = 'Loaded ✓';
+
+                // Auto-configure relayer with contract addresses
+                const relayerUrl = document.getElementById('relayerUrl').value;
+                if (relayerUrl) {
+                    try {
+                        await fetch(`${relayerUrl}/config/contracts`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ batchExecutor: batchAddr })
+                        });
+                        log('Relayer configured with contract addresses', 'info');
+                    } catch (e) {
+                        log('Relayer not running — start it for gasless meta-tx', 'info');
+                    }
+                }
                 
             } catch (e) {
                 log('Failed to load contracts: ' + e.message, 'error');
@@ -720,12 +739,23 @@
                     data: c.data
                 }));
 
-                // Hash the calls for the batch type
-                const callsEncoded = ethers.utils.defaultAbiCoder.encode(
-                    ['tuple(address target, uint256 value, bytes data)[]'],
-                    [calls]
+                // Hash the calls matching contract's _hashCalls logic:
+                // Each call: keccak256(abi.encode(target, value, keccak256(data)))
+                // Final: keccak256(abi.encodePacked(callHash1, callHash2, ...))
+                const callHashes = calls.map(c => 
+                    ethers.utils.keccak256(
+                        ethers.utils.defaultAbiCoder.encode(
+                            ['address', 'uint256', 'bytes32'],
+                            [c.target, c.value, ethers.utils.keccak256(c.data)]
+                        )
+                    )
                 );
-                const callsHash = ethers.utils.keccak256(callsEncoded);
+                const callsHash = ethers.utils.keccak256(
+                    ethers.utils.solidityPack(
+                        callHashes.map(() => 'bytes32'),
+                        callHashes
+                    )
+                );
 
                 const types = {
                     BatchExecution: [
@@ -747,26 +777,38 @@
                 const signature = await signer._signTypedData(domain, types, value);
                 log(`Step 3: Signature obtained (${signature.slice(0, 20)}...)`, 'success');
 
-                // Build the BatchRequest struct for the contract
-                const batchRequest = {
+                // Send signed payload to relayer service
+                const relayerUrl = document.getElementById('relayerUrl').value || 'http://localhost:3000';
+                log(`Step 4: Forwarding signed batch to relayer at ${relayerUrl}...`, 'info');
+                log('The RELAYER pays gas on-chain — the USER pays ZERO gas!', 'info');
+
+                const relayPayload = {
                     from: address,
-                    calls: calls,
-                    nonce: nonce,
-                    deadline: deadline
+                    calls: calls.map(c => ({
+                        target: c.target,
+                        value: c.value.toString(),
+                        data: c.data
+                    })),
+                    nonce: nonce.toString(),
+                    deadline: deadline,
+                    signature: signature
                 };
 
-                log('Step 4: Submitting meta-transaction via executeBatchMeta...', 'info');
-                log('Note: In production, a relayer would submit this — the USER pays ZERO gas.', 'info');
+                const response = await fetch(`${relayerUrl}/relay/batch`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(relayPayload)
+                });
 
-                // Call executeBatchMeta with the request and signature
-                // In production, the relayer (a separate account) calls this
-                // For demo, the connected wallet acts as its own relayer
-                const tx = await batchExecutor.executeBatchMeta(batchRequest, signature);
-                const receipt = await tx.wait();
+                const result = await response.json();
 
-                // Update gas stats
+                if (!result.success) {
+                    throw new Error(result.error || 'Relayer rejected the transaction');
+                }
+
+                // Update gas stats from relayer response
                 gasStats.individual = pendingCalls.reduce((sum, c) => sum + c.estimatedGas + 21000, 0);
-                gasStats.batched = receipt.gasUsed.toNumber();
+                gasStats.batched = parseInt(result.data.gasUsed);
                 document.getElementById('batchedGas').textContent = gasStats.batched.toLocaleString();
                 const saved = gasStats.individual - gasStats.batched;
                 document.getElementById('gasSaved').textContent = saved.toLocaleString();
@@ -775,8 +817,9 @@
                 document.getElementById('gasComparison').style.display = 'block';
                 document.getElementById('totalSavings').textContent = saved.toLocaleString() + ' gas';
 
-                log(`Meta-tx executed via executeBatchMeta! Gas used: ${receipt.gasUsed.toString()}`, 'success');
-                log('In a real deployment, a separate relayer account pays this gas — the USER pays ZERO.', 'success');
+                log(`Relayer submitted tx: ${result.data.transactionHash}`, 'success');
+                log(`Gas used by relayer: ${result.data.gasUsed} (block #${result.data.blockNumber})`, 'success');
+                log('USER paid ZERO gas — relayer covered the cost!', 'success');
 
                 pendingCalls = [];
                 updateBatchDisplay();
@@ -784,7 +827,7 @@
             } catch (e) {
                 log('Meta-tx failed: ' + e.message, 'error');
             } finally {
-                executeMetaBtn.textContent = 'Execute as Meta-Tx (Gasless Simulation)';
+                executeMetaBtn.textContent = 'Execute as Meta-Tx (via Relayer)';
                 executeMetaBtn.disabled = pendingCalls.length === 0;
             }
         });

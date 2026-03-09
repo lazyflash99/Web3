@@ -92,7 +92,8 @@ async function main() {
       GaslessToken: gaslessTokenAddress,
       SampleDApp: sampleDAppAddress
     },
-    deployer: deployer.address
+    deployer: deployer.address,
+    relayer: relayer?.address || null
   };
 
   console.log("Deployment Info:");

@@ -34,7 +34,7 @@ const config = {
     
     // Relayer wallet (must have ETH for gas)
     relayerPrivateKey: process.env.RELAYER_PRIVATE_KEY || 
-        '49c93ca3c6bb14e38fdffff54f0f6cf34c0770dcf2c5b6217351dd9336d47db5', // Hardhat #0
+        '59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d', // Hardhat Account #1 (well-known test key)
     
     // Contracts (deploy first, then update these)
     batchExecutorAddress: process.env.BATCH_EXECUTOR || '',
