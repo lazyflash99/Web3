@@ -11,7 +11,11 @@ app.use(express.json());
 // ═══════════════════════════════════════════════════════════════════════════
 
 const config = {
-    rpcUrl: process.env.SEPOLIA_RPC_URL || 'https://ethereum-sepolia-rpc.publicnode.com',
+    rpcUrls: [
+        process.env.SEPOLIA_RPC_URL || 'https://ethereum-sepolia-rpc.publicnode.com',
+        'https://rpc.sepolia.org',
+        'https://sepolia.gateway.tenderly.co'
+    ],
     chainId: 11155111,
     relayerPrivateKey: process.env.RELAYER_PRIVATE_KEY,
     contracts: {
@@ -45,9 +49,21 @@ const GAS_SPONSOR_ABI = [
 
 // Lazy init
 let provider, relayerWallet, batchExecutor, compressedBatchExecutor;
+let rpcIndex = 0;
 
 function getProvider() {
-    if (!provider) provider = new ethers.JsonRpcProvider(config.rpcUrl);
+    if (!provider) {
+        provider = new ethers.JsonRpcProvider(config.rpcUrls[rpcIndex]);
+    }
+    return provider;
+}
+
+function rotateProvider() {
+    rpcIndex = (rpcIndex + 1) % config.rpcUrls.length;
+    provider = new ethers.JsonRpcProvider(config.rpcUrls[rpcIndex]);
+    relayerWallet = null;
+    batchExecutor = null;
+    compressedBatchExecutor = null;
     return provider;
 }
 
@@ -88,15 +104,14 @@ function rateLimit(req, res, next) {
 //                              ROUTES
 // ═══════════════════════════════════════════════════════════════════════════
 
-app.get('/health', async (req, res) => {
+app.get('/health', (req, res) => {
     try {
         const wallet = getWallet();
-        const balance = await getProvider().getBalance(wallet.address);
         res.json({
             status: 'healthy',
             relayer: wallet.address,
-            balance: ethers.formatEther(balance),
             contracts: config.contracts,
+            rpc: config.rpcUrls[rpcIndex],
         });
     } catch (e) {
         res.json({ status: 'healthy', relayer: 'not configured', note: e.message });
@@ -139,32 +154,41 @@ app.post('/relay/batch', rateLimit, async (req, res) => {
         if (!signature || !signature.startsWith('0x')) return res.status(400).json({ success: false, error: 'Missing signature' });
         if (!Array.isArray(calls) || calls.length === 0) return res.status(400).json({ success: false, error: 'Empty calls' });
 
-        const executor = getBatchExecutor();
-        const currentNonce = await executor.getNonce(from);
-        if (BigInt(nonce) !== currentNonce) {
-            return res.status(400).json({ success: false, error: `Invalid nonce. Expected ${currentNonce}, got ${nonce}` });
+        let lastError;
+        for (let attempt = 0; attempt < config.rpcUrls.length; attempt++) {
+            try {
+                const executor = getBatchExecutor();
+                const currentNonce = await executor.getNonce(from);
+                if (BigInt(nonce) !== currentNonce) {
+                    return res.status(400).json({ success: false, error: `Invalid nonce. Expected ${currentNonce}, got ${nonce}` });
+                }
+
+                const now = Math.floor(Date.now() / 1000);
+                const batchRequest = {
+                    from,
+                    calls: calls.map(c => ({ target: c.target, value: c.value || 0, data: c.data })),
+                    nonce,
+                    deadline: deadline || now + 3600,
+                };
+
+                const gasEstimate = await executor.executeBatchMeta.estimateGas(batchRequest, signature);
+                const tx = await executor.executeBatchMeta(batchRequest, signature, { gasLimit: gasEstimate * 120n / 100n });
+                const receipt = await tx.wait();
+
+                return res.json({
+                    success: true,
+                    data: {
+                        transactionHash: tx.hash,
+                        blockNumber: receipt.blockNumber,
+                        gasUsed: receipt.gasUsed.toString(),
+                    },
+                });
+            } catch (e) {
+                lastError = e;
+                rotateProvider();
+            }
         }
-
-        const now = Math.floor(Date.now() / 1000);
-        const batchRequest = {
-            from,
-            calls: calls.map(c => ({ target: c.target, value: c.value || 0, data: c.data })),
-            nonce,
-            deadline: deadline || now + 3600,
-        };
-
-        const gasEstimate = await executor.executeBatchMeta.estimateGas(batchRequest, signature);
-        const tx = await executor.executeBatchMeta(batchRequest, signature, { gasLimit: gasEstimate * 120n / 100n });
-        const receipt = await tx.wait();
-
-        res.json({
-            success: true,
-            data: {
-                transactionHash: tx.hash,
-                blockNumber: receipt.blockNumber,
-                gasUsed: receipt.gasUsed.toString(),
-            },
-        });
+        res.status(500).json({ success: false, error: lastError.message });
     } catch (e) {
         res.status(500).json({ success: false, error: e.message });
     }
