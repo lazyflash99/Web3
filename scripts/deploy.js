@@ -53,7 +53,23 @@ async function main() {
   const sampleDAppAddress = await sampleDApp.getAddress();
   console.log("   SampleDApp deployed to:", sampleDAppAddress);
 
-  // 6. Configure contracts
+  // 6. Deploy CompressedBatchExecutor
+  console.log("\n6. Deploying CompressedBatchExecutor...");
+  const CompressedBatchExecutor = await hre.ethers.getContractFactory("CompressedBatchExecutor");
+  const compressedBatchExecutor = await CompressedBatchExecutor.deploy();
+  await compressedBatchExecutor.waitForDeployment();
+  const compressedBatchExecutorAddress = await compressedBatchExecutor.getAddress();
+  console.log("   CompressedBatchExecutor deployed to:", compressedBatchExecutorAddress);
+
+  // 7. Deploy SampleDAppMeta (trusts CompressedBatchExecutor as forwarder)
+  console.log("\n7. Deploying SampleDAppMeta...");
+  const SampleDAppMeta = await hre.ethers.getContractFactory("SampleDAppMeta");
+  const sampleDAppMeta = await SampleDAppMeta.deploy(compressedBatchExecutorAddress);
+  await sampleDAppMeta.waitForDeployment();
+  const sampleDAppMetaAddress = await sampleDAppMeta.getAddress();
+  console.log("   SampleDAppMeta deployed to:", sampleDAppMetaAddress);
+
+  // 8. Configure contracts
   console.log("\n============================================");
   console.log("Configuring contracts...");
   console.log("============================================\n");
@@ -74,8 +90,10 @@ async function main() {
   }
 
   // Fund the GasSponsor with some ETH
-  console.log("- Funding GasSponsor with 1 ETH...");
-  await gasSponsor.deposit({ value: hre.ethers.parseEther("1") });
+  const isTestnet = hre.network.name !== "hardhat" && hre.network.name !== "localhost";
+  const depositAmount = isTestnet ? "0.005" : "1";
+  console.log(`- Funding GasSponsor with ${depositAmount} ETH...`);
+  await gasSponsor.deposit({ value: hre.ethers.parseEther(depositAmount) });
 
   console.log("\n============================================");
   console.log("Deployment Complete!");
@@ -87,10 +105,12 @@ async function main() {
     chainId: (await hre.ethers.provider.getNetwork()).chainId.toString(),
     contracts: {
       BatchExecutor: batchExecutorAddress,
+      CompressedBatchExecutor: compressedBatchExecutorAddress,
       GasSponsor: gasSponsorAddress,
       Forwarder: forwarderAddress,
       GaslessToken: gaslessTokenAddress,
-      SampleDApp: sampleDAppAddress
+      SampleDApp: sampleDAppAddress,
+      SampleDAppMeta: sampleDAppMetaAddress
     },
     deployer: deployer.address,
     relayer: relayer?.address || null
@@ -115,14 +135,52 @@ async function main() {
     console.log("Verifying contracts on Etherscan...");
     console.log("============================================\n");
     
-    try {
-      await hre.run("verify:verify", {
-        address: batchExecutorAddress,
-        constructorArguments: []
-      });
-      console.log("BatchExecutor verified!");
-    } catch (e) {
-      console.log("BatchExecutor verification failed:", e.message);
+    const contractsToVerify = [
+      { address: batchExecutorAddress, args: [], name: "BatchExecutor" },
+      { address: compressedBatchExecutorAddress, args: [], name: "CompressedBatchExecutor" },
+      { address: gasSponsorAddress, args: [batchExecutorAddress], name: "GasSponsor" },
+      { address: forwarderAddress, args: [], name: "Forwarder" },
+      { address: gaslessTokenAddress, args: [forwarderAddress], name: "GaslessToken" },
+      { address: sampleDAppAddress, args: [], name: "SampleDApp" },
+      { address: sampleDAppMetaAddress, args: [compressedBatchExecutorAddress], name: "SampleDAppMeta" },
+    ];
+
+    for (const c of contractsToVerify) {
+      try {
+        await hre.run("verify:verify", { address: c.address, constructorArguments: c.args });
+        console.log(`${c.name} verified!`);
+      } catch (e) {
+        console.log(`${c.name} verification: ${e.message}`);
+      }
+    }
+
+    // Generate hosted frontend with embedded addresses
+    console.log("\n============================================");
+    console.log("Generating hosted frontend...");
+    console.log("============================================\n");
+
+    const frontendSrc = fs.readFileSync(path.join(__dirname, "..", "frontend", "index.html"), "utf-8");
+    const hosted = frontendSrc.replace(
+      /const DEPLOYED = \{[^}]*\};/s,
+      `const DEPLOYED = {\n` +
+      `                BatchExecutor: "${batchExecutorAddress}",\n` +
+      `                CompressedBatchExecutor: "${compressedBatchExecutorAddress}",\n` +
+      `                SampleDApp: "${sampleDAppAddress}",\n` +
+      `            };`
+    );
+    const hostedDir = path.join(__dirname, "..", "hosted");
+    if (!fs.existsSync(hostedDir)) fs.mkdirSync(hostedDir, { recursive: true });
+    fs.writeFileSync(path.join(hostedDir, "index.html"), hosted);
+    console.log("Hosted frontend saved to: hosted/index.html");
+    console.log("Upload this file to Vercel, Netlify, or GitHub Pages!\n");
+
+    const chainName = hre.network.name;
+    const explorerBase = chainName === "sepolia" ? "https://sepolia.etherscan.io" : "https://etherscan.io";
+    console.log("Frontend URL params (alternative):");
+    console.log(`  ?batch=${batchExecutorAddress}&compressed=${compressedBatchExecutorAddress}&dapp=${sampleDAppAddress}\n`);
+    console.log("Contract links:");
+    for (const c of contractsToVerify) {
+      console.log(`  ${c.name}: ${explorerBase}/address/${c.address}`);
     }
   }
 

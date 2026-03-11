@@ -38,12 +38,21 @@ const config = {
     
     // Contracts (deploy first, then update these)
     batchExecutorAddress: process.env.BATCH_EXECUTOR || '',
+    compressedBatchExecutorAddress: process.env.COMPRESSED_BATCH_EXECUTOR || '',
     forwarderAddress: process.env.FORWARDER || '',
     gasSponsorAddress: process.env.GAS_SPONSOR || '',
     
     // Rate limiting
     maxRequestsPerMinute: 10,
     maxGasPerRequest: 2000000,
+    
+    // Cross-user bundling
+    bundling: {
+        enabled: true,
+        maxQueueSize: 20,
+        flushIntervalMs: 5000,  // Flush every 5 seconds
+        minBatchSize: 2,        // Minimum requests before auto-flush
+    },
     
     // Sponsorship policies
     sponsorship: {
@@ -65,12 +74,17 @@ app.use(express.json());
 let provider;
 let relayerWallet;
 let batchExecutor;
+let compressedBatchExecutor;
 let forwarder;
 let gasSponsor;
 
 // Rate limiting storage (in-memory, use Redis in production)
 const rateLimits = new Map();
 const dailyUsage = new Map();
+
+// Cross-user bundle queue
+const bundleQueue = [];
+let flushTimer = null;
 
 // Contract ABIs (simplified - in production, load from artifacts)
 const BATCH_EXECUTOR_ABI = [
@@ -87,6 +101,15 @@ const FORWARDER_ABI = [
 const GAS_SPONSOR_ABI = [
     "function checkEligibility(address user, uint256 requestedGas) view returns (bool eligible, uint256 sponsoredAmount)",
     "function config() view returns (bool isActive, uint256 maxGasPerTx, uint256 maxGasPerDay, uint256 sponsorshipPercent, uint256 minBalance)"
+];
+
+const COMPRESSED_BATCH_EXECUTOR_ABI = [
+    "function executeSameTarget(address target, bytes[] calldata dataArray) external payable returns (bytes[] memory)",
+    "function executeCompressedBatch(address[] calldata targets, (uint8 targetIndex, uint256 value, bytes data)[] calldata calls) external payable returns (bytes[] memory)",
+    "function executeWithContext(address target, bytes[] calldata dataArray) external payable returns (bytes[] memory)",
+    "function executeWithContextMeta(address target, bytes[] calldata dataArray, address originalSender, bytes calldata signature) external payable returns (bytes[] memory)",
+    "function executeBundledBatches((address user, address target, bytes[] calls)[] calldata batches) external payable returns (bytes[][] memory)",
+    "function estimateSavings(uint256 numCalls, uint256 numUniqueTargets) external pure returns (uint256 calldataSaved, uint256 approxGasSaved)"
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -133,6 +156,21 @@ async function initialize() {
             relayerWallet
         );
         console.log(`📋 GasSponsor: ${config.gasSponsorAddress}`);
+    }
+    
+    if (config.compressedBatchExecutorAddress) {
+        compressedBatchExecutor = new ethers.Contract(
+            config.compressedBatchExecutorAddress,
+            COMPRESSED_BATCH_EXECUTOR_ABI,
+            relayerWallet
+        );
+        console.log(`📋 CompressedBatchExecutor: ${config.compressedBatchExecutorAddress}`);
+    }
+    
+    // Start bundle flush timer
+    if (config.bundling.enabled) {
+        flushTimer = setInterval(flushBundleQueue, config.bundling.flushIntervalMs);
+        console.log(`📦 Cross-user bundling enabled (flush every ${config.bundling.flushIntervalMs}ms)`);
     }
     
     console.log('\n✅ Initialization complete!\n');
@@ -516,11 +554,21 @@ app.get('/gas-price', async (req, res) => {
 // Configure contracts (for development)
 app.post('/config/contracts', async (req, res) => {
     try {
-        const { batchExecutor: batchAddr, forwarder: forwardAddr, gasSponsor: sponsorAddr } = req.body;
+        const { 
+            batchExecutor: batchAddr, 
+            compressedBatchExecutor: compressedAddr,
+            forwarder: forwardAddr, 
+            gasSponsor: sponsorAddr 
+        } = req.body;
         
         if (batchAddr && ethers.isAddress(batchAddr)) {
             config.batchExecutorAddress = batchAddr;
             batchExecutor = new ethers.Contract(batchAddr, BATCH_EXECUTOR_ABI, relayerWallet);
+        }
+        
+        if (compressedAddr && ethers.isAddress(compressedAddr)) {
+            config.compressedBatchExecutorAddress = compressedAddr;
+            compressedBatchExecutor = new ethers.Contract(compressedAddr, COMPRESSED_BATCH_EXECUTOR_ABI, relayerWallet);
         }
         
         if (forwardAddr && ethers.isAddress(forwardAddr)) {
@@ -537,6 +585,7 @@ app.post('/config/contracts', async (req, res) => {
             success: true,
             data: {
                 batchExecutor: config.batchExecutorAddress,
+                compressedBatchExecutor: config.compressedBatchExecutorAddress,
                 forwarder: config.forwarderAddress,
                 gasSponsor: config.gasSponsorAddress
             }
@@ -547,6 +596,168 @@ app.post('/config/contracts', async (req, res) => {
             success: false,
             error: error.message
         });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+//                        CROSS-USER BUNDLING
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Flush the bundle queue - submit all queued requests in a single tx
+async function flushBundleQueue() {
+    if (bundleQueue.length < config.bundling.minBatchSize) return;
+    
+    const batch = bundleQueue.splice(0, config.bundling.maxQueueSize);
+    
+    if (!compressedBatchExecutor || batch.length === 0) return;
+    
+    console.log(`\n📦 Flushing bundle queue: ${batch.length} user batches`);
+    
+    try {
+        // Build UserBatch[] for executeBundledBatches
+        const userBatches = batch.map(entry => ({
+            user: entry.from,
+            target: entry.target,
+            calls: entry.calls
+        }));
+        
+        const tx = await compressedBatchExecutor.executeBundledBatches(userBatches);
+        const receipt = await tx.wait();
+        
+        console.log(`   ✅ Bundle confirmed in block ${receipt.blockNumber}`);
+        console.log(`   Gas used: ${receipt.gasUsed} for ${batch.length} users`);
+        console.log(`   Gas per user: ~${receipt.gasUsed / BigInt(batch.length)}`);
+        
+        // Resolve all pending promises
+        batch.forEach(entry => {
+            entry.resolve({
+                transactionHash: receipt.hash,
+                blockNumber: receipt.blockNumber,
+                gasUsed: receipt.gasUsed.toString(),
+                bundledWith: batch.length,
+                gasPerUser: (receipt.gasUsed / BigInt(batch.length)).toString()
+            });
+        });
+    } catch (error) {
+        console.error('❌ Bundle flush error:', error.message);
+        batch.forEach(entry => entry.reject(error));
+    }
+}
+
+// Submit to cross-user bundle queue (gasless for all users)
+app.post('/relay/bundle', rateLimit, async (req, res) => {
+    try {
+        const { from, target, calls } = req.body;
+        
+        if (!from || !ethers.isAddress(from)) {
+            return res.status(400).json({ success: false, error: 'Invalid "from" address' });
+        }
+        if (!target || !ethers.isAddress(target)) {
+            return res.status(400).json({ success: false, error: 'Invalid "target" address' });
+        }
+        if (!Array.isArray(calls) || calls.length === 0) {
+            return res.status(400).json({ success: false, error: 'Empty calls array' });
+        }
+        
+        if (!compressedBatchExecutor) {
+            return res.status(503).json({ success: false, error: 'CompressedBatchExecutor not configured' });
+        }
+        
+        // Add to queue with a promise that resolves when the bundle is flushed
+        const resultPromise = new Promise((resolve, reject) => {
+            bundleQueue.push({ from, target, calls, resolve, reject });
+        });
+        
+        console.log(`📥 Queued bundle request from ${from} (${calls.length} calls, queue size: ${bundleQueue.length})`);
+        
+        // Auto-flush if queue is full
+        if (bundleQueue.length >= config.bundling.maxQueueSize) {
+            flushBundleQueue();
+        }
+        
+        // Wait for the bundle to be submitted
+        const result = await resultPromise;
+        
+        res.json({ success: true, data: result });
+    } catch (error) {
+        console.error('❌ Bundle error:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Force flush the bundle queue immediately
+app.post('/relay/bundle/flush', async (req, res) => {
+    try {
+        const queueSize = bundleQueue.length;
+        if (queueSize === 0) {
+            return res.json({ success: true, data: { message: 'Queue empty, nothing to flush' } });
+        }
+        await flushBundleQueue();
+        res.json({ success: true, data: { flushed: queueSize } });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Submit compressed batch (single user, optimized calldata)
+app.post('/relay/compressed', rateLimit, async (req, res) => {
+    try {
+        const { target, dataArray } = req.body;
+        
+        if (!target || !ethers.isAddress(target)) {
+            return res.status(400).json({ success: false, error: 'Invalid target address' });
+        }
+        if (!Array.isArray(dataArray) || dataArray.length === 0) {
+            return res.status(400).json({ success: false, error: 'Empty dataArray' });
+        }
+        if (!compressedBatchExecutor) {
+            return res.status(503).json({ success: false, error: 'CompressedBatchExecutor not configured' });
+        }
+        
+        const tx = await compressedBatchExecutor.executeSameTarget(target, dataArray);
+        const receipt = await tx.wait();
+        
+        console.log(`📤 Compressed batch: ${dataArray.length} calls to ${target}`);
+        console.log(`   Gas used: ${receipt.gasUsed}`);
+        
+        res.json({
+            success: true,
+            data: {
+                transactionHash: receipt.hash,
+                blockNumber: receipt.blockNumber,
+                gasUsed: receipt.gasUsed.toString(),
+                callCount: dataArray.length
+            }
+        });
+    } catch (error) {
+        console.error('❌ Compressed relay error:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get gas savings estimate
+app.get('/estimate/:numCalls/:numTargets', async (req, res) => {
+    try {
+        const numCalls = parseInt(req.params.numCalls);
+        const numTargets = parseInt(req.params.numTargets);
+        
+        if (!compressedBatchExecutor) {
+            return res.status(503).json({ success: false, error: 'CompressedBatchExecutor not configured' });
+        }
+        
+        const [calldataSaved, approxGasSaved] = await compressedBatchExecutor.estimateSavings(numCalls, numTargets);
+        
+        res.json({
+            success: true,
+            data: {
+                calldataSaved: calldataSaved.toString(),
+                approxGasSaved: approxGasSaved.toString(),
+                numCalls,
+                numTargets
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
@@ -567,6 +778,10 @@ async function startServer() {
         console.log('  GET  /nonce/:address      - Get user nonce');
         console.log('  POST /relay/batch         - Submit batch meta-tx');
         console.log('  POST /relay/forward       - Submit forwarded tx');
+        console.log('  POST /relay/compressed    - Submit compressed batch');
+        console.log('  POST /relay/bundle        - Queue cross-user bundle');
+        console.log('  POST /relay/bundle/flush  - Force flush bundle queue');
+        console.log('  GET  /estimate/:n/:t      - Estimate gas savings');
         console.log('  GET  /sponsorship/:addr   - Check sponsorship');
         console.log('  GET  /gas-price           - Get gas prices');
         console.log('  POST /config/contracts    - Configure contracts\n');

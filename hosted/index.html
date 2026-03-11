@@ -499,10 +499,9 @@
 
             // Priority 2: Embedded config (set after deployment)
             const DEPLOYED = {
-                // After deploying to Sepolia, paste addresses here:
-                // BatchExecutor: "0x...",
-                // CompressedBatchExecutor: "0x...",
-                // SampleDApp: "0x...",
+                BatchExecutor: "0x2c61E8959b5602C1DD9399fB16ABE9182fc7E3E7",
+                CompressedBatchExecutor: "0x01eAA34feF31F33E5EB15C5084569C1399B9C0CB",
+                SampleDApp: "0x47FF1aCB49cf23C28AA5887FC3bb5073D566f938",
             };
             if (DEPLOYED.BatchExecutor) {
                 document.getElementById('batchExecutorAddr').value = DEPLOYED.BatchExecutor || '';

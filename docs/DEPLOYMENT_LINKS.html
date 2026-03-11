@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gas Fee Optimizer - Deployment Guide & Links</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #0f172a; color: #f8fafc; padding: 40px; line-height: 1.8; }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg, #6366f1, #a855f7); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.5rem; }
+        h2 { font-size: 1.5rem; color: #a855f7; margin: 2rem 0 1rem; border-bottom: 1px solid #334155; padding-bottom: 0.5rem; }
+        h3 { font-size: 1.1rem; color: #6366f1; margin: 1.5rem 0 0.5rem; }
+        p { color: #cbd5e1; margin-bottom: 0.75rem; }
+        .subtitle { color: #94a3b8; font-size: 1.1rem; margin-bottom: 2rem; }
+        .badge { display: inline-block; padding: 4px 14px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; }
+        .badge-purple { background: #6366f1; color: white; }
+        .badge-green { background: #10b981; color: white; }
+        code { background: #1e293b; padding: 2px 8px; border-radius: 4px; font-size: 0.9rem; color: #e2e8f0; font-family: 'Consolas', monospace; }
+        .code-block { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 1rem 1.25rem; font-family: 'Consolas', monospace; font-size: 0.9rem; color: #e2e8f0; margin: 1rem 0; overflow-x: auto; white-space: pre-wrap; }
+        .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 1.5rem; margin: 1rem 0; }
+        .link-box { background: #1e293b; border: 2px solid #6366f1; border-radius: 12px; padding: 1.5rem; margin: 1rem 0; text-align: center; }
+        .link-box a { color: #818cf8; font-size: 1.1rem; font-weight: 600; text-decoration: none; word-break: break-all; }
+        .link-box a:hover { text-decoration: underline; }
+        .link-box .label { color: #94a3b8; font-size: 0.85rem; margin-bottom: 0.5rem; }
+        ol, ul { padding-left: 1.5rem; margin: 0.5rem 0; color: #cbd5e1; }
+        li { margin-bottom: 0.5rem; }
+        .step { display: flex; gap: 1rem; margin-bottom: 1rem; align-items: flex-start; }
+        .step-num { background: #6366f1; color: white; font-weight: 700; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.9rem; }
+        .step-content { flex: 1; }
+        .warning { background: #422006; border: 1px solid #f59e0b; border-radius: 8px; padding: 1rem; margin: 1rem 0; color: #fbbf24; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        th, td { padding: 0.6rem 1rem; text-align: left; border-bottom: 1px solid #334155; font-size: 0.9rem; }
+        th { color: #a855f7; }
+        td { color: #cbd5e1; }
+        .footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #334155; color: #64748b; font-size: 0.85rem; text-align: center; }
+        @media print {
+            body { background: white; color: #1e293b; padding: 20px; }
+            h1 { -webkit-text-fill-color: #4f46e5; color: #4f46e5; }
+            h2 { color: #6366f1; border-bottom-color: #e2e8f0; }
+            h3 { color: #4f46e5; }
+            p, li, td { color: #334155; }
+            th { color: #6366f1; }
+            code { background: #f1f5f9; color: #334155; }
+            .code-block { background: #f1f5f9; border-color: #e2e8f0; color: #334155; }
+            .card { background: #f8fafc; border-color: #e2e8f0; }
+            .link-box { border-color: #6366f1; background: #f8fafc; }
+            .link-box a { color: #4f46e5; }
+            .link-box .label { color: #64748b; }
+            .warning { background: #fefce8; border-color: #f59e0b; color: #92400e; }
+            .badge-purple { background: #6366f1; }
+            .badge-green { background: #10b981; }
+            .footer { color: #94a3b8; border-top-color: #e2e8f0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p style="color: #6366f1; font-weight: 600;">KRITI 2026 &bull; Web3Assam</p>
+        <h1>⛽ Gas Fee Optimizer</h1>
+        <p class="subtitle">Deployment Guide & Deployed Links</p>
+        <div>
+            <span class="badge badge-purple">Batch Transaction System</span>
+            <span class="badge badge-green" style="margin-left: 0.5rem;">Sepolia Testnet</span>
+        </div>
+
+        <h2>🔗 Deployed Links</h2>
+
+        <div class="link-box">
+            <div class="label">FRONTEND UI (Live Demo)</div>
+            <a href="#" id="frontendLink">[ Deploy to get link — see steps below ]</a>
+            <p style="color: #94a3b8; font-size: 0.8rem; margin-top: 0.5rem;">
+                Host <code>hosted/index.html</code> on Vercel / Netlify / GitHub Pages after deploying contracts
+            </p>
+        </div>
+
+        <h3>Contract Addresses (Sepolia)</h3>
+        <table>
+            <tr><th>Contract</th><th>Address</th><th>Etherscan</th></tr>
+            <tr><td>BatchExecutor</td><td><code>[ fill after deploy ]</code></td><td><a href="#" style="color: #818cf8;">View</a></td></tr>
+            <tr><td>CompressedBatchExecutor</td><td><code>[ fill after deploy ]</code></td><td><a href="#" style="color: #818cf8;">View</a></td></tr>
+            <tr><td>GasSponsor</td><td><code>[ fill after deploy ]</code></td><td><a href="#" style="color: #818cf8;">View</a></td></tr>
+            <tr><td>Forwarder</td><td><code>[ fill after deploy ]</code></td><td><a href="#" style="color: #818cf8;">View</a></td></tr>
+            <tr><td>GaslessToken</td><td><code>[ fill after deploy ]</code></td><td><a href="#" style="color: #818cf8;">View</a></td></tr>
+            <tr><td>SampleDApp</td><td><code>[ fill after deploy ]</code></td><td><a href="#" style="color: #818cf8;">View</a></td></tr>
+            <tr><td>SampleDAppMeta</td><td><code>[ fill after deploy ]</code></td><td><a href="#" style="color: #818cf8;">View</a></td></tr>
+        </table>
+
+        <h2>📋 Step-by-Step Deployment</h2>
+
+        <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+                <strong>Get Sepolia ETH</strong>
+                <p>Go to <a href="https://sepoliafaucet.com" style="color: #818cf8;">sepoliafaucet.com</a> or <a href="https://www.alchemy.com/faucets/ethereum-sepolia" style="color: #818cf8;">Alchemy Sepolia Faucet</a> and request test ETH for your deployment wallet. You need ~0.05 ETH.</p>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+                <strong>Get an Alchemy/Infura API Key</strong>
+                <p>Create a free account at <a href="https://www.alchemy.com" style="color: #818cf8;">alchemy.com</a>, create an app on Sepolia, and copy the HTTPS URL.</p>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+                <strong>Configure .env</strong>
+                <div class="code-block">cp .env.example .env
+
+# Edit .env with your values:
+PRIVATE_KEY=your_wallet_private_key_without_0x
+SEPOLIA_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_KEY
+ETHERSCAN_API_KEY=your_etherscan_api_key</div>
+                <div class="warning">⚠️ Never commit your .env file to Git! It's already in .gitignore.</div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-content">
+                <strong>Deploy to Sepolia</strong>
+                <div class="code-block">npm run deploy:sepolia</div>
+                <p>This will deploy all 7 contracts, verify them on Etherscan, and generate <code>hosted/index.html</code> with embedded addresses.</p>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num">5</div>
+            <div class="step-content">
+                <strong>Host the Frontend</strong>
+                <p>Upload <code>hosted/index.html</code> to any free static host:</p>
+                <div class="card">
+                    <h3>Option A: Vercel (Recommended — 30 seconds)</h3>
+                    <ol>
+                        <li>Go to <a href="https://vercel.com" style="color: #818cf8;">vercel.com</a> → Sign up with GitHub</li>
+                        <li>Click "Add New Project" → "Import Git Repository" or drag-drop the <code>hosted/</code> folder</li>
+                        <li>Click Deploy → Get your live URL</li>
+                    </ol>
+                </div>
+                <div class="card">
+                    <h3>Option B: Netlify (Drag & Drop)</h3>
+                    <ol>
+                        <li>Go to <a href="https://app.netlify.com/drop" style="color: #818cf8;">app.netlify.com/drop</a></li>
+                        <li>Drag the <code>hosted/</code> folder onto the page</li>
+                        <li>Instant URL generated</li>
+                    </ol>
+                </div>
+                <div class="card">
+                    <h3>Option C: GitHub Pages</h3>
+                    <ol>
+                        <li>Push <code>hosted/index.html</code> to a GitHub repo</li>
+                        <li>Go to Settings → Pages → Deploy from branch</li>
+                        <li>URL: <code>https://username.github.io/repo-name</code></li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num">6</div>
+            <div class="step-content">
+                <strong>Fill in links above & export this page as PDF</strong>
+                <p>After deploying, fill in the contract addresses and frontend link above, then print this page as PDF (Ctrl+P → Save as PDF).</p>
+            </div>
+        </div>
+
+        <h2>🧪 Testing the Deployed Frontend</h2>
+        <ol>
+            <li>Open the hosted URL in Chrome with MetaMask installed</li>
+            <li>Switch MetaMask to <strong>Sepolia testnet</strong></li>
+            <li>Click "Connect Wallet" → "Load Contracts"</li>
+            <li>Click "Quick Demo (5 Actions)" to load test actions</li>
+            <li>Click "Execute Individually" first (baseline), then reload and try "Standard Batch" or "Compressed Batch"</li>
+            <li>Compare gas usage in the bar chart</li>
+        </ol>
+
+        <h2>📂 Project Structure</h2>
+        <div class="code-block">gas-fee-optimizer/
+├── contracts/           # 15+ Solidity contracts
+│   ├── BatchExecutor.sol
+│   ├── CompressedBatchExecutor.sol  ← NOVEL
+│   ├── GasSponsor.sol
+│   ├── Forwarder.sol
+│   └── ...
+├── frontend/            # Interactive UI (source)
+├── hosted/              # Generated after deploy (upload this)
+├── relayer/             # Express.js relayer service
+├── scripts/             # Deploy & demo scripts
+├── test/                # 67+ automated tests
+├── presentation/        # 20-slide HTML presentation
+├── docs/                # Architecture & guides
+└── deployments/         # Contract addresses per network</div>
+
+        <div class="footer">
+            Gas Fee Optimizer & Batch Transaction System — KRITI 2026, Web3Assam<br>
+            Built with Hardhat · Solidity 0.8.24 · ethers.js · OpenZeppelin · EIP-712/2771/2612/4337
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gas Fee Optimizer - KRITI 2026 Presentation</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .slide {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            padding: 60px 80px;
+            position: relative;
+        }
+
+        .slide.active { display: flex; flex-direction: column; }
+
+        /* Slide counter */
+        .slide-counter {
+            position: fixed;
+            bottom: 20px;
+            right: 30px;
+            font-size: 14px;
+            color: #64748b;
+            z-index: 100;
+        }
+
+        /* Navigation */
+        .nav-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 30px;
+            font-size: 12px;
+            color: #475569;
+            z-index: 100;
+        }
+
+        /* Common styles */
+        h1 { font-size: 3rem; font-weight: 800; line-height: 1.2; margin-bottom: 1rem; }
+        h2 { font-size: 2.2rem; font-weight: 700; margin-bottom: 1.5rem; color: #e2e8f0; }
+        h3 { font-size: 1.4rem; font-weight: 600; color: #a855f7; margin-bottom: 0.75rem; }
+        p { font-size: 1.15rem; line-height: 1.7; color: #cbd5e1; }
+        ul { list-style: none; padding: 0; }
+        ul li { font-size: 1.1rem; padding: 0.4rem 0; color: #cbd5e1; position: relative; padding-left: 1.5rem; }
+        ul li::before { content: '→'; position: absolute; left: 0; color: #6366f1; font-weight: bold; }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent; color: transparent;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 16px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .badge-purple { background: #6366f1; color: white; }
+        .badge-green { background: #10b981; color: white; }
+        .badge-orange { background: #f59e0b; color: black; }
+        .badge-red { background: #ef4444; color: white; }
+
+        .columns { display: flex; gap: 3rem; flex: 1; align-items: flex-start; }
+        .col { flex: 1; }
+
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+        }
+        .card.highlight { border-color: #6366f1; }
+        .card.novel { border-color: #a855f7; background: linear-gradient(135deg, #1e293b, #2d1b4e); }
+
+        .code-block {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            font-family: 'Consolas', 'Fira Code', monospace;
+            font-size: 0.9rem;
+            color: #e2e8f0;
+            overflow-x: auto;
+            line-height: 1.5;
+        }
+
+        .stat-row {
+            display: flex;
+            gap: 1.5rem;
+            margin: 1rem 0;
+        }
+        .stat-box {
+            flex: 1;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 1.25rem;
+            text-align: center;
+        }
+        .stat-box .number {
+            font-size: 2.5rem;
+            font-weight: 800;
+        }
+        .stat-box .label {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-top: 0.25rem;
+        }
+
+        .bar-chart { margin: 1rem 0; }
+        .bar-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.6rem;
+            gap: 0.75rem;
+        }
+        .bar-label {
+            width: 140px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-align: right;
+        }
+        .bar-container {
+            flex: 1;
+            height: 40px;
+            background: #1e293b;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .bar-fill {
+            height: 100%;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: white;
+        }
+        .bar-fill.red { background: linear-gradient(90deg, #ef4444, #dc2626); }
+        .bar-fill.blue { background: linear-gradient(90deg, #6366f1, #818cf8); }
+        .bar-fill.purple { background: linear-gradient(90deg, #a855f7, #c084fc); }
+        .bar-fill.green { background: linear-gradient(90deg, #10b981, #34d399); }
+
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 1.5rem 0;
+            flex-wrap: wrap;
+        }
+        .flow-box {
+            background: #1e293b;
+            border: 2px solid #334155;
+            border-radius: 12px;
+            padding: 0.75rem 1.25rem;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .flow-box.active { border-color: #6366f1; background: linear-gradient(135deg, #1e293b, #312e81); }
+        .flow-arrow { font-size: 1.5rem; color: #6366f1; }
+
+        .eip-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .eip-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 1rem;
+        }
+        .eip-card .eip-num {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #a855f7;
+            margin-bottom: 0.25rem;
+        }
+        .eip-card .eip-name {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .title-slide {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .title-slide h1 { font-size: 4rem; margin-bottom: 1rem; }
+        .title-slide p { font-size: 1.4rem; color: #94a3b8; }
+
+        .section-slide {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .section-slide h2 { font-size: 3rem; }
+
+        .flex-1 { flex: 1; }
+        .mt-1 { margin-top: 1rem; }
+        .mt-2 { margin-top: 2rem; }
+        .mb-1 { margin-bottom: 1rem; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid #334155;
+            font-size: 0.95rem;
+        }
+        th { color: #a855f7; font-weight: 600; }
+        td { color: #cbd5e1; }
+
+        .checkmark { color: #10b981; font-weight: bold; }
+        .crossmark { color: #ef4444; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<!-- SLIDE 1: Title -->
+<div class="slide title-slide active" data-slide="1">
+    <div>
+        <p style="font-size: 1.2rem; color: #6366f1; margin-bottom: 1rem;">KRITI 2026 &bull; Web3Assam</p>
+        <h1><span class="gradient-text">⛽ Gas Fee Optimizer</span></h1>
+        <p style="font-size: 1.3rem; color: #94a3b8; margin-top: 1rem;">
+            Calldata Compression &bull; Context-Preserving Batching &bull; Cross-User Bundling
+        </p>
+        <div style="margin-top: 2rem;">
+            <span class="badge badge-purple">Batch Transaction System</span>
+            <span class="badge badge-green" style="margin-left: 0.5rem;">Meta-Transactions</span>
+            <span class="badge badge-orange" style="margin-left: 0.5rem;">Gas Sponsorship</span>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 2: Problem -->
+<div class="slide" data-slide="2">
+    <h2>The Problem: Gas Fee Friction</h2>
+    <div class="columns">
+        <div class="col">
+            <div class="card">
+                <h3>💸 High Costs</h3>
+                <p>Every on-chain action requires a separate transaction with 21,000 base gas overhead. Multi-step workflows multiply costs.</p>
+            </div>
+            <div class="card">
+                <h3>😩 Poor UX</h3>
+                <p>Users must approve multiple MetaMask popups, hold ETH for gas, and wait for each confirmation. New users drop off.</p>
+            </div>
+            <div class="card">
+                <h3>🚫 Onboarding Friction</h3>
+                <p>New users need to acquire native tokens before they can interact. This is a massive barrier for Web3 adoption.</p>
+            </div>
+        </div>
+        <div class="col">
+            <h3>Example: NFT Marketplace</h3>
+            <p class="mb-1">A user wants to update profile + create 4 listings:</p>
+            <div class="bar-chart">
+                <div class="bar-row">
+                    <div class="bar-label" style="color: #ef4444;">5 Separate Txs</div>
+                    <div class="bar-container">
+                        <div class="bar-fill red" style="width: 100%;">836,218 gas</div>
+                    </div>
+                </div>
+                <div class="bar-row">
+                    <div class="bar-label" style="color: #6366f1;">Batched (1 Tx)</div>
+                    <div class="bar-container">
+                        <div class="bar-fill blue" style="width: 91%;">762,080 gas</div>
+                    </div>
+                </div>
+            </div>
+            <p style="font-size: 1rem; margin-top: 0.5rem;">
+                <strong style="color: #10b981;">Saving 74,138 gas</strong> = <strong style="color: #10b981;">~8%</strong> on just 5 calls.
+                With 10+ calls, savings reach <strong style="color: #10b981;">15%+</strong>
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 3: Our Solution Overview -->
+<div class="slide" data-slide="3">
+    <h2>Our Solution: Multi-Layer Gas Optimization</h2>
+    <div class="flow-diagram">
+        <div class="flow-box">👤 User<br><small style="color:#94a3b8;">Signs off-chain</small></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box active">🔄 Relayer<br><small style="color:#94a3b8;">Bundles & submits</small></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box active">📦 BatchExecutor<br><small style="color:#94a3b8;">One tx, N calls</small></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box">📱 Target DApp<br><small style="color:#94a3b8;">Executes actions</small></div>
+    </div>
+    <div class="stat-row">
+        <div class="stat-box">
+            <div class="number gradient-text">3</div>
+            <div class="label">Optimization Layers</div>
+        </div>
+        <div class="stat-box">
+            <div class="number" style="color: #10b981;">15%+</div>
+            <div class="label">Gas Savings (10 calls)</div>
+        </div>
+        <div class="stat-box">
+            <div class="number" style="color: #f59e0b;">ZERO</div>
+            <div class="label">Gas for Users (Meta-Tx)</div>
+        </div>
+        <div class="stat-box">
+            <div class="number" style="color: #a855f7;">6</div>
+            <div class="label">EIP Standards Used</div>
+        </div>
+    </div>
+    <div class="columns mt-1">
+        <div class="col card">
+            <h3>Layer 1: Transaction Batching</h3>
+            <p>Combine N calls into 1 transaction, saving N-1 base gas costs (21,000 each)</p>
+        </div>
+        <div class="col card novel">
+            <h3>Layer 2: Calldata Compression <span class="badge badge-purple" style="font-size: 0.7rem;">NOVEL</span></h3>
+            <p>Target deduplication + compact encoding reduces calldata gas by up to 19 bytes per call</p>
+        </div>
+        <div class="col card novel">
+            <h3>Layer 3: Cross-User Bundling <span class="badge badge-purple" style="font-size: 0.7rem;">NOVEL</span></h3>
+            <p>Multiple users' transactions bundled into one on-chain tx. All users pay zero gas.</p>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 4: Architecture -->
+<div class="slide" data-slide="4">
+    <h2>System Architecture</h2>
+    <div class="columns">
+        <div class="col">
+            <div class="flow-diagram" style="flex-direction: column; align-items: stretch;">
+                <div class="flow-box" style="text-align: left;">
+                    <strong>📱 Frontend (index.html)</strong><br>
+                    <small style="color:#94a3b8;">Wallet connection, batch builder, 3-way gas comparison chart, Individual vs Batched vs Compressed execution modes</small>
+                </div>
+                <div class="flow-arrow" style="text-align: center;">↕</div>
+                <div class="flow-box active" style="text-align: left;">
+                    <strong>🔄 Relayer Service (Express.js)</strong><br>
+                    <small style="color:#94a3b8;">Rate limiting, nonce mgmt, cross-user queue, gas sponsorship checks, bundle flush timer</small>
+                </div>
+                <div class="flow-arrow" style="text-align: center;">↕</div>
+                <div class="flow-box" style="text-align: left;">
+                    <strong>⛓ Smart Contracts (Solidity 0.8.24)</strong><br>
+                    <small style="color:#94a3b8;">BatchExecutor, CompressedBatchExecutor, Forwarder, GasSponsor, SampleDApp + 10 more</small>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <h3>Key Design Decisions</h3>
+            <ul>
+                <li>EIP-712 typed signatures for human-readable signing</li>
+                <li>Nonce + deadline for replay protection</li>
+                <li>Authorized relayer whitelist for trust model</li>
+                <li>Gas sponsor with configurable quotas</li>
+                <li>EIP-2771 context forwarding to preserve msg.sender</li>
+                <li>Assembly-optimized revert passthrough</li>
+                <li>ReentrancyGuard on all external calls</li>
+            </ul>
+            <h3 class="mt-1">Contract Count</h3>
+            <p><strong style="color: #6366f1;">15+ Solidity contracts</strong> compiled successfully, covering batching, meta-tx, gas sponsorship, account abstraction, security, and upgradeability</p>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 5: Standard BatchExecutor -->
+<div class="slide" data-slide="5">
+    <h2>Smart Contract: BatchExecutor</h2>
+    <div class="columns">
+        <div class="col">
+            <h3>Core Functions</h3>
+            <div class="code-block">
+<span style="color:#a855f7;">function</span> <span style="color:#6366f1;">executeBatch</span>(Call[] calls)
+  <span style="color:#94a3b8;">// Direct batch - user pays gas for 1 tx</span>
+  <span style="color:#94a3b8;">// instead of N separate transactions</span>
+
+<span style="color:#a855f7;">function</span> <span style="color:#6366f1;">executeBatchMeta</span>(
+  BatchRequest request,
+  bytes signature
+)
+  <span style="color:#94a3b8;">// Meta-tx - user signs, relayer pays gas</span>
+  <span style="color:#94a3b8;">// EIP-712 signature verification</span>
+  <span style="color:#94a3b8;">// Nonce replay protection</span>
+  <span style="color:#94a3b8;">// Deadline enforcement</span>
+            </div>
+        </div>
+        <div class="col">
+            <h3>Security Features</h3>
+            <div class="card">
+                <ul>
+                    <li><strong style="color:#10b981;">✓</strong> EIP-712 typed data signatures</li>
+                    <li><strong style="color:#10b981;">✓</strong> Monotonic nonce (no replay)</li>
+                    <li><strong style="color:#10b981;">✓</strong> Deadline expiry checking</li>
+                    <li><strong style="color:#10b981;">✓</strong> Authorized relayer whitelist</li>
+                    <li><strong style="color:#10b981;">✓</strong> ReentrancyGuard protection</li>
+                    <li><strong style="color:#10b981;">✓</strong> Call failure tracking (doesn't revert batch)</li>
+                </ul>
+            </div>
+            <h3 class="mt-1">Gas Savings Mechanism</h3>
+            <p>Each separate transaction has a 21,000 gas base cost. Batching N calls saves <strong style="color: #10b981;">(N-1) × 21,000</strong> gas by paying the base cost only once.</p>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 6: CompressedBatchExecutor (NOVEL) -->
+<div class="slide" data-slide="6">
+    <h2>🏆 Novel Innovation: CompressedBatchExecutor</h2>
+    <p class="mb-1" style="color: #a855f7; font-weight: 600;">Our key differentiator — beyond standard batching</p>
+    <div class="columns">
+        <div class="col">
+            <div class="card novel">
+                <h3>1. executeSameTarget()</h3>
+                <p>When all calls go to one contract (common case: marketplace, DEX), store the target address <strong>once</strong> instead of N times.</p>
+                <p style="color: #10b981; margin-top: 0.5rem;">Saves 19 bytes × (N-1) calls</p>
+            </div>
+            <div class="card novel">
+                <h3>2. executeCompressedBatch()</h3>
+                <p>Target deduplication via uint8 index table. Each call references a target by 1-byte index instead of 20-byte address.</p>
+                <p style="color: #10b981; margin-top: 0.5rem;">Supports up to 256 unique targets</p>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card novel">
+                <h3>3. executeWithContext() <span class="badge badge-orange" style="font-size: 0.65rem;">EIP-2771</span></h3>
+                <p>Appends original msg.sender to calldata. Target contracts can extract real user identity. <strong>Solves the identity loss problem.</strong></p>
+            </div>
+            <div class="card novel">
+                <h3>4. executeBundledBatches() <span class="badge badge-red" style="font-size: 0.65rem;">CROSS-USER</span></h3>
+                <p>Multiple users' batches in ONE transaction. 3 users × N calls = 1 on-chain tx. <strong>All users pay ZERO gas.</strong></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 7: Gas Results - 5 calls -->
+<div class="slide" data-slide="7">
+    <h2>📊 Gas Savings: 5-Call Benchmark</h2>
+    <p class="mb-1">Scenario: 1 profile update + 4 listing creations</p>
+    <div class="bar-chart">
+        <div class="bar-row">
+            <div class="bar-label" style="color: #ef4444;">🐌 Individual<br>5 separate txs</div>
+            <div class="bar-container">
+                <div class="bar-fill red" style="width: 100%;">836,218 gas (100%)</div>
+            </div>
+        </div>
+        <div class="bar-row">
+            <div class="bar-label" style="color: #6366f1;">📦 Standard Batch<br>1 batched tx</div>
+            <div class="bar-container">
+                <div class="bar-fill blue" style="width: 91%;">762,080 gas (-8.9%)</div>
+            </div>
+        </div>
+        <div class="bar-row">
+            <div class="bar-label" style="color: #a855f7;">⚡ Compressed<br>1 optimized tx</div>
+            <div class="bar-container">
+                <div class="bar-fill purple" style="width: 91%;">764,985 gas (-8.5%)</div>
+            </div>
+        </div>
+    </div>
+    <div class="stat-row">
+        <div class="stat-box">
+            <div class="number" style="color: #ef4444;">836,218</div>
+            <div class="label">Individual (baseline)</div>
+        </div>
+        <div class="stat-box">
+            <div class="number" style="color: #6366f1;">74,138</div>
+            <div class="label">Gas Saved (Standard)</div>
+        </div>
+        <div class="stat-box">
+            <div class="number" style="color: #10b981;">8.9%</div>
+            <div class="label">Reduction</div>
+        </div>
+    </div>
+    <p style="font-size: 0.95rem; color: #94a3b8; margin-top: 0.5rem;">
+        <em>At 5 calls, compressed has slightly more overhead. But at scale (10+ calls), compressed wins...</em>
+    </p>
+</div>
+
+<!-- SLIDE 8: Gas Results - 10 calls -->
+<div class="slide" data-slide="8">
+    <h2>📊 Gas Savings: 10-Call Benchmark</h2>
+    <p class="mb-1">Scenario: 2 profile updates + 8 listing creations</p>
+    <div class="bar-chart">
+        <div class="bar-row">
+            <div class="bar-label" style="color: #ef4444;">🐌 Individual<br>10 separate txs</div>
+            <div class="bar-container">
+                <div class="bar-fill red" style="width: 100%;">1,843,030 gas (100%)</div>
+            </div>
+        </div>
+        <div class="bar-row">
+            <div class="bar-label" style="color: #6366f1;">📦 Standard Batch<br>1 batched tx</div>
+            <div class="bar-container">
+                <div class="bar-fill blue" style="width: 85.6%;">1,578,351 gas (-14.4%)</div>
+            </div>
+        </div>
+        <div class="bar-row">
+            <div class="bar-label" style="color: #a855f7;">⚡ Compressed<br>1 optimized tx</div>
+            <div class="bar-container">
+                <div class="bar-fill purple" style="width: 84.7%;">1,560,540 gas (-15.3%)</div>
+            </div>
+        </div>
+    </div>
+    <div class="stat-row">
+        <div class="stat-box">
+            <div class="number" style="color: #10b981;">282,490</div>
+            <div class="label">Total Gas Saved</div>
+        </div>
+        <div class="stat-box">
+            <div class="number" style="color: #a855f7;">15.3%</div>
+            <div class="label">Compressed Savings</div>
+        </div>
+        <div class="stat-box">
+            <div class="number" style="color: #f59e0b;">17,811</div>
+            <div class="label">Compressed vs Standard</div>
+        </div>
+    </div>
+    <p style="color: #10b981; font-weight: 600; font-size: 1.1rem; margin-top: 0.5rem;">
+        ✅ At scale, CompressedBatchExecutor beats standard batching — and savings grow with batch size!
+    </p>
+</div>
+
+<!-- SLIDE 9: Context Preservation (msg.sender fix) -->
+<div class="slide" data-slide="9">
+    <h2>🔐 Context-Preserving Batch Execution</h2>
+    <p class="mb-1">Solving the msg.sender identity loss problem in batch calls</p>
+    <div class="columns">
+        <div class="col">
+            <div class="card" style="border-color: #ef4444;">
+                <h3 style="color: #ef4444;">❌ Standard Batching Problem</h3>
+                <div class="code-block" style="font-size: 0.85rem;">
+User → BatchExecutor → SampleDApp
+
+<span style="color:#ef4444;">Inside SampleDApp:</span>
+  msg.sender = <span style="color:#ef4444;">BatchExecutor</span> ❌
+  <span style="color:#94a3b8;">// User identity is LOST!</span>
+  <span style="color:#94a3b8;">// Profile stored under wrong address</span>
+                </div>
+                <p class="mt-1">When BatchExecutor calls the DApp, msg.sender becomes the BatchExecutor's address, not the user's. This is a fundamental problem.</p>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card novel">
+                <h3 style="color: #10b981;">✅ Our Solution: EIP-2771 Context</h3>
+                <div class="code-block" style="font-size: 0.85rem;">
+User → CompressedBatch → SampleDAppMeta
+
+<span style="color:#10b981;">CompressedBatch appends sender:</span>
+  calldata = originalData + <span style="color:#10b981;">user.address</span>
+
+<span style="color:#10b981;">SampleDAppMeta extracts it:</span>
+  sender = <span style="color:#10b981;">_msgSender()</span> ✅
+  <span style="color:#94a3b8;">// Correct user identity preserved!</span>
+                </div>
+                <p class="mt-1">executeWithContext() appends the original sender to calldata. EIP-2771 compatible targets extract the real user.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 10: Cross-User Bundling -->
+<div class="slide" data-slide="10">
+    <h2>🚀 Cross-User Transaction Bundling</h2>
+    <p class="mb-1">The relayer collects transactions from multiple users and submits them as ONE on-chain transaction</p>
+    <div class="flow-diagram">
+        <div class="flow-box">👤 Alice<br><small style="color:#94a3b8">3 calls</small></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box active" style="min-width: 200px;">
+            🔄 Relayer Queue<br>
+            <small style="color:#94a3b8">Collects & Bundles</small>
+        </div>
+        <div class="flow-arrow">←</div>
+        <div class="flow-box">👤 Bob<br><small style="color:#94a3b8">2 calls</small></div>
+    </div>
+    <div class="flow-diagram" style="margin-top: 0;">
+        <div class="flow-box">👤 Charlie<br><small style="color:#94a3b8">4 calls</small></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box active" style="min-width: 200px;">
+            📦 executeBundledBatches()<br>
+            <small style="color:#94a3b8">1 transaction on-chain</small>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box" style="border-color: #10b981;">⛓ Blockchain<br><small style="color:#10b981">9 calls, 1 tx</small></div>
+    </div>
+    <div class="stat-row mt-1">
+        <div class="stat-box">
+            <div class="number" style="color: #10b981;">3 → 1</div>
+            <div class="label">Transactions Reduced</div>
+        </div>
+        <div class="stat-box">
+            <div class="number" style="color: #f59e0b;">ZERO</div>
+            <div class="label">Gas Per User</div>
+        </div>
+        <div class="stat-box">
+            <div class="number" style="color: #a855f7;">42,000</div>
+            <div class="label">Base Gas Saved (2×21k)</div>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 11: Meta-Transactions -->
+<div class="slide" data-slide="11">
+    <h2>Meta-Transaction Flow (EIP-712)</h2>
+    <div class="columns">
+        <div class="col">
+            <h3>How It Works</h3>
+            <div class="card">
+                <p><strong>1.</strong> User builds batch of actions in the UI</p>
+            </div>
+            <div class="card highlight">
+                <p><strong>2.</strong> Frontend creates EIP-712 typed data with calls hash, nonce, and deadline</p>
+            </div>
+            <div class="card">
+                <p><strong>3.</strong> User signs with MetaMask (human-readable prompt)</p>
+            </div>
+            <div class="card highlight">
+                <p><strong>4.</strong> Signed payload sent to Relayer via HTTP POST</p>
+            </div>
+            <div class="card">
+                <p><strong>5.</strong> Relayer validates, checks sponsorship, submits on-chain</p>
+            </div>
+            <div class="card" style="border-color: #10b981;">
+                <p><strong>6.</strong> BatchExecutor verifies signature + executes — <strong style="color: #10b981;">user pays ZERO gas</strong></p>
+            </div>
+        </div>
+        <div class="col">
+            <h3>EIP-712 Typed Data Structure</h3>
+            <div class="code-block">
+<span style="color:#a855f7;">domain</span> = {
+  name: '<span style="color:#10b981;">GasOptimizer</span>',
+  version: '1',
+  chainId: 31337,
+  verifyingContract: batchExecutor
+}
+
+<span style="color:#a855f7;">BatchExecution</span> = {
+  from: <span style="color:#6366f1;">address</span>,
+  callsHash: <span style="color:#6366f1;">bytes32</span>,
+  nonce: <span style="color:#6366f1;">uint256</span>,
+  deadline: <span style="color:#6366f1;">uint256</span>
+}
+            </div>
+            <h3 class="mt-1">Security</h3>
+            <ul>
+                <li>Calls hash prevents tampering</li>
+                <li>Nonce prevents replay attacks</li>
+                <li>Deadline prevents stale submissions</li>
+                <li>Domain separator prevents cross-chain replay</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 12: Gas Sponsorship -->
+<div class="slide" data-slide="12">
+    <h2>Gas Sponsorship Mechanism</h2>
+    <div class="columns">
+        <div class="col">
+            <h3>GasSponsor Contract</h3>
+            <div class="card">
+                <h3>Configurable Policies</h3>
+                <ul>
+                    <li>Maximum gas per transaction limit</li>
+                    <li>Daily gas quota per user</li>
+                    <li>Percentage sponsorship (25%, 50%, 100%)</li>
+                    <li>Minimum balance requirement</li>
+                    <li>Admin can activate/deactivate</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>Eligibility Checks</h3>
+                <ul>
+                    <li>User hasn't exceeded daily quota</li>
+                    <li>Requested gas within limits</li>
+                    <li>Sponsor has sufficient ETH balance</li>
+                    <li>Sponsorship is currently active</li>
+                </ul>
+            </div>
+        </div>
+        <div class="col">
+            <h3>Sponsorship Flow</h3>
+            <div class="code-block">
+<span style="color:#94a3b8;">// Relayer checks before submitting:</span>
+(eligible, amount) = gasSponsor
+  .<span style="color:#6366f1;">checkEligibility</span>(user, gasNeeded)
+
+<span style="color:#a855f7;">if</span> (eligible) {
+  <span style="color:#94a3b8;">// Relayer submits, gas cost deducted</span>
+  <span style="color:#94a3b8;">// from sponsor's deposit</span>
+  gasSponsor.<span style="color:#6366f1;">recordUsage</span>(user, gasUsed)
+}
+            </div>
+            <h3 class="mt-1">Access Control</h3>
+            <ul>
+                <li>Owner-only configuration changes</li>
+                <li>Admin role for day-to-day management</li>
+                <li>Relayer role for usage recording</li>
+                <li>Built on OpenZeppelin AccessControl</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 13: EIP Standards -->
+<div class="slide" data-slide="13">
+    <h2>EIP Standards Implemented</h2>
+    <div class="eip-grid">
+        <div class="eip-card">
+            <div class="eip-num">EIP-712</div>
+            <div class="eip-name">Typed Structured Data</div>
+            <p style="font-size: 0.85rem; margin-top: 0.5rem;">Human-readable signing. Users see exactly what they're signing in MetaMask instead of raw hex data.</p>
+        </div>
+        <div class="eip-card">
+            <div class="eip-num">EIP-2771</div>
+            <div class="eip-name">Meta-Tx Recipients</div>
+            <p style="font-size: 0.85rem; margin-top: 0.5rem;">Trusted forwarder pattern. Target contracts can extract original sender from batch/forwarded calls.</p>
+        </div>
+        <div class="eip-card">
+            <div class="eip-num">EIP-2612</div>
+            <div class="eip-name">Permit (Token Approvals)</div>
+            <p style="font-size: 0.85rem; margin-top: 0.5rem;">Gasless token approvals. Approve + transfer in one transaction via signatures.</p>
+        </div>
+        <div class="eip-card">
+            <div class="eip-num">EIP-4337</div>
+            <div class="eip-name">Account Abstraction</div>
+            <p style="font-size: 0.85rem; margin-top: 0.5rem;">EntryPoint, SimpleAccount, Paymasters. Full account abstraction infrastructure.</p>
+        </div>
+        <div class="eip-card">
+            <div class="eip-num">EIP-1559</div>
+            <div class="eip-name">Fee Market</div>
+            <p style="font-size: 0.85rem; margin-top: 0.5rem;">Gas price oracle for optimal fee estimation. Base fee + priority fee calculations.</p>
+        </div>
+        <div class="eip-card">
+            <div class="eip-num">UUPS</div>
+            <div class="eip-name">Upgradeable Proxy</div>
+            <p style="font-size: 0.85rem; margin-top: 0.5rem;">BatchExecutorUpgradeable with UUPS proxy pattern for future contract upgrades.</p>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 14: Relayer Service -->
+<div class="slide" data-slide="14">
+    <h2>Relayer Service Architecture</h2>
+    <div class="columns">
+        <div class="col">
+            <h3>Express.js Service</h3>
+            <table>
+                <tr><th>Endpoint</th><th>Purpose</th></tr>
+                <tr><td>POST /relay/batch</td><td>Submit signed batch meta-tx</td></tr>
+                <tr><td>POST /relay/compressed</td><td>Compressed batch (calldata optimized)</td></tr>
+                <tr><td>POST /relay/bundle</td><td>Queue for cross-user bundling</td></tr>
+                <tr><td>POST /relay/forward</td><td>Single call forwarding</td></tr>
+                <tr><td>GET /nonce/:addr</td><td>User nonce lookup</td></tr>
+                <tr><td>GET /sponsorship/:addr</td><td>Check gas sponsorship</td></tr>
+                <tr><td>GET /gas-price</td><td>Current gas price info</td></tr>
+            </table>
+        </div>
+        <div class="col">
+            <h3>Cross-User Bundle Queue</h3>
+            <div class="card novel">
+                <ul>
+                    <li>Incoming requests queued in-memory</li>
+                    <li>Auto-flush every 5 seconds</li>
+                    <li>Or when queue reaches max size (20)</li>
+                    <li>Manual flush endpoint available</li>
+                    <li>All users' batches combined in 1 tx</li>
+                </ul>
+            </div>
+            <h3 class="mt-1">Security</h3>
+            <ul>
+                <li>Rate limiting (10 req/min per IP)</li>
+                <li>Address validation on all inputs</li>
+                <li>Gas limit cap (2M per request)</li>
+                <li>Daily usage tracking per user</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 15: Security -->
+<div class="slide" data-slide="15">
+    <h2>Security Model</h2>
+    <div class="columns">
+        <div class="col">
+            <h3>Smart Contract Security</h3>
+            <div class="card">
+                <table style="margin: 0;">
+                    <tr><td><span class="checkmark">✓</span> Replay Protection</td><td>Monotonic nonces per user</td></tr>
+                    <tr><td><span class="checkmark">✓</span> Reentrancy Guard</td><td>OpenZeppelin nonReentrant</td></tr>
+                    <tr><td><span class="checkmark">✓</span> Signature Validation</td><td>ECDSA + EIP-712</td></tr>
+                    <tr><td><span class="checkmark">✓</span> Access Control</td><td>Ownable + role-based</td></tr>
+                    <tr><td><span class="checkmark">✓</span> Deadline Enforcement</td><td>Block.timestamp checks</td></tr>
+                    <tr><td><span class="checkmark">✓</span> Safe Failure</td><td>Individual call failures don't revert batch</td></tr>
+                </table>
+            </div>
+        </div>
+        <div class="col">
+            <h3>Additional Security Contracts</h3>
+            <div class="card">
+                <h3>CircuitBreaker.sol</h3>
+                <p>Emergency pause mechanism. Tracks execution rates and can halt operations if anomalous patterns detected.</p>
+            </div>
+            <div class="card">
+                <h3>Trust Model</h3>
+                <ul>
+                    <li>Users only trust their own signature</li>
+                    <li>Relayer can't modify call data (hash verified)</li>
+                    <li>Contracts verify signatures on-chain</li>
+                    <li>Worst case: relayer doesn't submit (no loss)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 16: Frontend Demo -->
+<div class="slide" data-slide="16">
+    <h2>Frontend: Interactive Gas Optimizer</h2>
+    <div class="columns">
+        <div class="col">
+            <h3>Features</h3>
+            <div class="card">
+                <ul>
+                    <li>MetaMask wallet connection</li>
+                    <li>Auto-loads deployment addresses</li>
+                    <li>Drag-and-drop batch builder</li>
+                    <li>Quick Demo: 5 or 10 actions pre-loaded</li>
+                    <li>4 execution modes:
+                        <ul style="margin-left: 1.5rem;">
+                            <li>🐌 Individual (baseline comparison)</li>
+                            <li>📦 Standard Batch</li>
+                            <li>⚡ Compressed Batch</li>
+                            <li>🔐 Meta-Tx via Relayer</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col">
+            <h3>Visual Gas Comparison</h3>
+            <div class="card highlight">
+                <p style="margin-bottom: 0.5rem;">Real-time animated bar chart showing:</p>
+                <div class="bar-chart">
+                    <div class="bar-row">
+                        <div class="bar-label" style="font-size: 0.75rem; color: #ef4444;">Individual</div>
+                        <div class="bar-container" style="height: 24px;">
+                            <div class="bar-fill red" style="width: 100%; font-size: 0.7rem;">836,218</div>
+                        </div>
+                    </div>
+                    <div class="bar-row">
+                        <div class="bar-label" style="font-size: 0.75rem; color: #6366f1;">Std Batch</div>
+                        <div class="bar-container" style="height: 24px;">
+                            <div class="bar-fill blue" style="width: 91%; font-size: 0.7rem;">762,080</div>
+                        </div>
+                    </div>
+                    <div class="bar-row">
+                        <div class="bar-label" style="font-size: 0.75rem; color: #a855f7;">Compressed</div>
+                        <div class="bar-container" style="height: 24px;">
+                            <div class="bar-fill purple" style="width: 91%; font-size: 0.7rem;">764,985</div>
+                        </div>
+                    </div>
+                </div>
+                <p style="color: #10b981; font-weight: 600; margin-top: 0.5rem;">Live gas comparison with real on-chain data</p>
+            </div>
+            <p class="mt-1">Self-contained single HTML file. No build step needed. Uses ethers.js CDN.</p>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 17: Testing -->
+<div class="slide" data-slide="17">
+    <h2>Testing & Validation</h2>
+    <div class="columns">
+        <div class="col">
+            <h3>Test Coverage</h3>
+            <div class="stat-row">
+                <div class="stat-box">
+                    <div class="number" style="color: #10b981;">67+</div>
+                    <div class="label">Tests Passing</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number" style="color: #6366f1;">50</div>
+                    <div class="label">Contracts Compiled</div>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Test Files</h3>
+                <ul>
+                    <li><strong>GasOptimizer.test.js</strong> — 27 tests<br>
+                        <small style="color: #94a3b8;">Batch execution, meta-tx, gas sponsor, forwarder, end-to-end</small></li>
+                    <li><strong>Advanced.test.js</strong> — 22 tests<br>
+                        <small style="color: #94a3b8;">Permit tokens, circuit breaker, upgradeable proxy, multicall</small></li>
+                    <li><strong>Compressed.test.js</strong> — 9 tests<br>
+                        <small style="color: #94a3b8;">Head-to-head gas comparison, context preservation, cross-user bundling</small></li>
+                </ul>
+            </div>
+        </div>
+        <div class="col">
+            <h3>Key Test Results</h3>
+            <table>
+                <tr><th>Test</th><th>Result</th></tr>
+                <tr><td>5-call gas savings</td><td><span class="checkmark">✓</span> 8.9%</td></tr>
+                <tr><td>10-call gas savings</td><td><span class="checkmark">✓</span> 15.3%</td></tr>
+                <tr><td>Context preservation</td><td><span class="checkmark">✓</span> Identity preserved</td></tr>
+                <tr><td>Cross-user bundling</td><td><span class="checkmark">✓</span> 3 users, 0 gas each</td></tr>
+                <tr><td>Meta-tx + context</td><td><span class="checkmark">✓</span> Gasless + identity</td></tr>
+                <tr><td>Replay protection</td><td><span class="checkmark">✓</span> Nonce enforced</td></tr>
+                <tr><td>Gas estimation helper</td><td><span class="checkmark">✓</span> Within 10% accuracy</td></tr>
+            </table>
+            <div class="code-block mt-1" style="font-size: 0.85rem;">
+$ npx hardhat test
+<span style="color: #10b981;">  67 passing</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 18: Contract Map -->
+<div class="slide" data-slide="18">
+    <h2>Complete Contract Ecosystem</h2>
+    <div class="columns">
+        <div class="col">
+            <h3>Core Contracts</h3>
+            <div class="card highlight">
+                <ul>
+                    <li><strong>BatchExecutor.sol</strong> — Standard batch + meta-tx</li>
+                    <li><strong>CompressedBatchExecutor.sol</strong> — Calldata-optimized execution</li>
+                    <li><strong>Forwarder.sol</strong> — EIP-2771 trusted forwarder</li>
+                    <li><strong>GasSponsor.sol</strong> — Gas sponsorship with quotas</li>
+                    <li><strong>GaslessToken.sol</strong> — ERC-20 with permit</li>
+                </ul>
+            </div>
+            <h3>Application Contracts</h3>
+            <div class="card">
+                <ul>
+                    <li><strong>SampleDApp.sol</strong> — Marketplace (profiles + listings)</li>
+                    <li><strong>SampleDAppMeta.sol</strong> — EIP-2771 aware version</li>
+                    <li><strong>MetaTxRecipient.sol</strong> — Base for meta-tx targets</li>
+                </ul>
+            </div>
+        </div>
+        <div class="col">
+            <h3>Advanced Contracts</h3>
+            <div class="card novel">
+                <ul>
+                    <li><strong>Multicall3.sol</strong> — Read-only batching</li>
+                    <li><strong>PermitToken.sol</strong> — EIP-2612 permit token</li>
+                    <li><strong>CircuitBreaker.sol</strong> — Emergency pause</li>
+                    <li><strong>GasPriceOracle.sol</strong> — EIP-1559 fee estimation</li>
+                    <li><strong>BatchExecutorUpgradeable.sol</strong> — UUPS proxy</li>
+                </ul>
+            </div>
+            <h3>Account Abstraction (EIP-4337)</h3>
+            <div class="card">
+                <ul>
+                    <li><strong>EntryPoint.sol</strong> — UserOp validation</li>
+                    <li><strong>SimpleAccount.sol</strong> — Smart wallet</li>
+                    <li><strong>Paymasters.sol</strong> — Gas payment abstraction</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 19: What Makes Us Different -->
+<div class="slide" data-slide="19">
+    <h2>What Makes This Solution Different?</h2>
+    <div class="columns">
+        <div class="col">
+            <div class="card novel">
+                <h3>🏆 Novel Contributions</h3>
+                <ul>
+                    <li><strong>Calldata Compression</strong> — Target deduplication via index table. Not found in standard batch implementations. Genuine gas savings at scale.</li>
+                    <li><strong>Context-Preserving Batching</strong> — Solves the msg.sender identity loss. Users keep their identity through batched calls via EIP-2771.</li>
+                    <li><strong>Cross-User Bundling</strong> — Relayer aggregates multiple users' batches into one transaction. Like a mini-bundler for the relayer.</li>
+                    <li><strong>4 Execution Modes</strong> — executeSameTarget, executeCompressedBatch, executeWithContext, executeBundledBatches</li>
+                </ul>
+            </div>
+        </div>
+        <div class="col">
+            <h3>Depth & Breadth</h3>
+            <div class="stat-row">
+                <div class="stat-box">
+                    <div class="number gradient-text">15+</div>
+                    <div class="label">Contracts</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number" style="color: #10b981;">67+</div>
+                    <div class="label">Tests</div>
+                </div>
+            </div>
+            <h3>Real-World Applicability</h3>
+            <div class="card">
+                <ul>
+                    <li>NFT marketplaces: batch listings</li>
+                    <li>DeFi: batch approvals + swaps</li>
+                    <li>GameFi: batch in-game actions</li>
+                    <li>DAOs: batch governance votes</li>
+                    <li>Onboarding: gasless first interactions</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SLIDE 20: Thank You -->
+<div class="slide title-slide" data-slide="20">
+    <div>
+        <p style="font-size: 1.2rem; color: #a855f7; margin-bottom: 1rem;">KRITI 2026 &bull; Web3Assam</p>
+        <h1><span class="gradient-text">Thank You!</span></h1>
+        <p style="font-size: 1.3rem; color: #94a3b8; margin-top: 1rem;">
+            Gas Fee Optimizer &amp; Batch Transaction System
+        </p>
+        <div style="margin-top: 2rem;">
+            <span class="badge badge-green">15%+ Gas Savings</span>
+            <span class="badge badge-purple" style="margin-left: 0.5rem;">Calldata Compression</span>
+            <span class="badge badge-orange" style="margin-left: 0.5rem;">Zero Gas for Users</span>
+        </div>
+        <div style="margin-top: 3rem; color: #64748b;">
+            <p>15+ contracts &bull; 67+ tests &bull; 6 EIP standards &bull; Cross-user bundling &bull; Context preservation</p>
+        </div>
+    </div>
+</div>
+
+<!-- Slide counter & nav -->
+<div class="slide-counter" id="slideCounter">1 / 20</div>
+<div class="nav-hint">← → Arrow keys or click to navigate</div>
+
+<script>
+    let currentSlide = 1;
+    const totalSlides = 20;
+
+    function showSlide(n) {
+        if (n < 1 || n > totalSlides) return;
+        document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+        document.querySelector(`[data-slide="${n}"]`).classList.add('active');
+        currentSlide = n;
+        document.getElementById('slideCounter').textContent = `${n} / ${totalSlides}`;
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); showSlide(currentSlide + 1); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); showSlide(currentSlide - 1); }
+        if (e.key === 'Home') showSlide(1);
+        if (e.key === 'End') showSlide(totalSlides);
+    });
+
+    document.addEventListener('click', (e) => {
+        const x = e.clientX;
+        if (x > window.innerWidth / 2) showSlide(currentSlide + 1);
+        else showSlide(currentSlide - 1);
+    });
+</script>
+</body>
+</html>
