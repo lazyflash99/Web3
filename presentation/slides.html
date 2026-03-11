@@ -244,7 +244,7 @@
 <div class="slide title-slide active" data-slide="1">
     <div>
         <p style="font-size: 1.2rem; color: #6366f1; margin-bottom: 1rem;">KRITI 2026 &bull; Web3Assam</p>
-        <h1><span class="gradient-text">⛽ Gas Fee Optimizer</span></h1>
+        <h1><span class="gradient-text">Gas Fee Optimizer</span></h1>
         <p style="font-size: 1.3rem; color: #94a3b8; margin-top: 1rem;">
             Calldata Compression &bull; Context-Preserving Batching &bull; Cross-User Bundling
         </p>
@@ -262,15 +262,15 @@
     <div class="columns">
         <div class="col">
             <div class="card">
-                <h3>💸 High Costs</h3>
+                <h3>High Costs</h3>
                 <p>Every on-chain action requires a separate transaction with 21,000 base gas overhead. Multi-step workflows multiply costs.</p>
             </div>
             <div class="card">
-                <h3>😩 Poor UX</h3>
+                <h3>Poor UX</h3>
                 <p>Users must approve multiple MetaMask popups, hold ETH for gas, and wait for each confirmation. New users drop off.</p>
             </div>
             <div class="card">
-                <h3>🚫 Onboarding Friction</h3>
+                <h3>Onboarding Friction</h3>
                 <p>New users need to acquire native tokens before they can interact. This is a massive barrier for Web3 adoption.</p>
             </div>
         </div>
@@ -303,13 +303,13 @@
 <div class="slide" data-slide="3">
     <h2>Our Solution: Multi-Layer Gas Optimization</h2>
     <div class="flow-diagram">
-        <div class="flow-box">👤 User<br><small style="color:#94a3b8;">Signs off-chain</small></div>
+        <div class="flow-box">User<br><small style="color:#94a3b8;">Signs off-chain</small></div>
         <div class="flow-arrow">→</div>
-        <div class="flow-box active">🔄 Relayer<br><small style="color:#94a3b8;">Bundles & submits</small></div>
+        <div class="flow-box active">Relayer<br><small style="color:#94a3b8;">Bundles & submits</small></div>
         <div class="flow-arrow">→</div>
-        <div class="flow-box active">📦 BatchExecutor<br><small style="color:#94a3b8;">One tx, N calls</small></div>
+        <div class="flow-box active">BatchExecutor<br><small style="color:#94a3b8;">One tx, N calls</small></div>
         <div class="flow-arrow">→</div>
-        <div class="flow-box">📱 Target DApp<br><small style="color:#94a3b8;">Executes actions</small></div>
+        <div class="flow-box">Target DApp<br><small style="color:#94a3b8;">Executes actions</small></div>
     </div>
     <div class="stat-row">
         <div class="stat-box">
@@ -352,17 +352,17 @@
         <div class="col">
             <div class="flow-diagram" style="flex-direction: column; align-items: stretch;">
                 <div class="flow-box" style="text-align: left;">
-                    <strong>📱 Frontend (index.html)</strong><br>
+                    <strong>Frontend (index.html)</strong><br>
                     <small style="color:#94a3b8;">Wallet connection, batch builder, 3-way gas comparison chart, Individual vs Batched vs Compressed execution modes</small>
                 </div>
                 <div class="flow-arrow" style="text-align: center;">↕</div>
                 <div class="flow-box active" style="text-align: left;">
-                    <strong>🔄 Relayer Service (Express.js)</strong><br>
+                    <strong>Relayer Service (Express.js)</strong><br>
                     <small style="color:#94a3b8;">Rate limiting, nonce mgmt, cross-user queue, gas sponsorship checks, bundle flush timer</small>
                 </div>
                 <div class="flow-arrow" style="text-align: center;">↕</div>
                 <div class="flow-box" style="text-align: left;">
-                    <strong>⛓ Smart Contracts (Solidity 0.8.24)</strong><br>
+                    <strong>Smart Contracts (Solidity 0.8.24)</strong><br>
                     <small style="color:#94a3b8;">BatchExecutor, CompressedBatchExecutor, Forwarder, GasSponsor, SampleDApp + 10 more</small>
                 </div>
             </div>
@@ -425,7 +425,7 @@
 
 <!-- SLIDE 6: CompressedBatchExecutor (NOVEL) -->
 <div class="slide" data-slide="6">
-    <h2>🏆 Novel Innovation: CompressedBatchExecutor</h2>
+    <h2>Novel Innovation: CompressedBatchExecutor</h2>
     <p class="mb-1" style="color: #a855f7; font-weight: 600;">Our key differentiator — beyond standard batching</p>
     <div class="columns">
         <div class="col">
@@ -455,23 +455,23 @@
 
 <!-- SLIDE 7: Gas Results - 5 calls -->
 <div class="slide" data-slide="7">
-    <h2>📊 Gas Savings: 5-Call Benchmark</h2>
+    <h2>Gas Savings: 5-Call Benchmark</h2>
     <p class="mb-1">Scenario: 1 profile update + 4 listing creations</p>
     <div class="bar-chart">
         <div class="bar-row">
-            <div class="bar-label" style="color: #ef4444;">🐌 Individual<br>5 separate txs</div>
+            <div class="bar-label" style="color: #ef4444;">Individual<br>5 separate txs</div>
             <div class="bar-container">
                 <div class="bar-fill red" style="width: 100%;">836,218 gas (100%)</div>
             </div>
         </div>
         <div class="bar-row">
-            <div class="bar-label" style="color: #6366f1;">📦 Standard Batch<br>1 batched tx</div>
+            <div class="bar-label" style="color: #6366f1;">Standard Batch<br>1 batched tx</div>
             <div class="bar-container">
                 <div class="bar-fill blue" style="width: 91%;">762,080 gas (-8.9%)</div>
             </div>
         </div>
         <div class="bar-row">
-            <div class="bar-label" style="color: #a855f7;">⚡ Compressed<br>1 optimized tx</div>
+            <div class="bar-label" style="color: #a855f7;">Compressed<br>1 optimized tx</div>
             <div class="bar-container">
                 <div class="bar-fill purple" style="width: 91%;">764,985 gas (-8.5%)</div>
             </div>
@@ -498,23 +498,23 @@
 
 <!-- SLIDE 8: Gas Results - 10 calls -->
 <div class="slide" data-slide="8">
-    <h2>📊 Gas Savings: 10-Call Benchmark</h2>
+    <h2>Gas Savings: 10-Call Benchmark</h2>
     <p class="mb-1">Scenario: 2 profile updates + 8 listing creations</p>
     <div class="bar-chart">
         <div class="bar-row">
-            <div class="bar-label" style="color: #ef4444;">🐌 Individual<br>10 separate txs</div>
+            <div class="bar-label" style="color: #ef4444;">Individual<br>10 separate txs</div>
             <div class="bar-container">
                 <div class="bar-fill red" style="width: 100%;">1,843,030 gas (100%)</div>
             </div>
         </div>
         <div class="bar-row">
-            <div class="bar-label" style="color: #6366f1;">📦 Standard Batch<br>1 batched tx</div>
+            <div class="bar-label" style="color: #6366f1;">Standard Batch<br>1 batched tx</div>
             <div class="bar-container">
                 <div class="bar-fill blue" style="width: 85.6%;">1,578,351 gas (-14.4%)</div>
             </div>
         </div>
         <div class="bar-row">
-            <div class="bar-label" style="color: #a855f7;">⚡ Compressed<br>1 optimized tx</div>
+            <div class="bar-label" style="color: #a855f7;">Compressed<br>1 optimized tx</div>
             <div class="bar-container">
                 <div class="bar-fill purple" style="width: 84.7%;">1,560,540 gas (-15.3%)</div>
             </div>
@@ -535,23 +535,23 @@
         </div>
     </div>
     <p style="color: #10b981; font-weight: 600; font-size: 1.1rem; margin-top: 0.5rem;">
-        ✅ At scale, CompressedBatchExecutor beats standard batching — and savings grow with batch size!
+        At scale, CompressedBatchExecutor beats standard batching — and savings grow with batch size!
     </p>
 </div>
 
 <!-- SLIDE 9: Context Preservation (msg.sender fix) -->
 <div class="slide" data-slide="9">
-    <h2>🔐 Context-Preserving Batch Execution</h2>
+    <h2>Context-Preserving Batch Execution</h2>
     <p class="mb-1">Solving the msg.sender identity loss problem in batch calls</p>
     <div class="columns">
         <div class="col">
             <div class="card" style="border-color: #ef4444;">
-                <h3 style="color: #ef4444;">❌ Standard Batching Problem</h3>
+                <h3 style="color: #ef4444;">Standard Batching Problem</h3>
                 <div class="code-block" style="font-size: 0.85rem;">
 User → BatchExecutor → SampleDApp
 
 <span style="color:#ef4444;">Inside SampleDApp:</span>
-  msg.sender = <span style="color:#ef4444;">BatchExecutor</span> ❌
+  msg.sender = <span style="color:#ef4444;">BatchExecutor</span>
   <span style="color:#94a3b8;">// User identity is LOST!</span>
   <span style="color:#94a3b8;">// Profile stored under wrong address</span>
                 </div>
@@ -560,7 +560,7 @@ User → BatchExecutor → SampleDApp
         </div>
         <div class="col">
             <div class="card novel">
-                <h3 style="color: #10b981;">✅ Our Solution: EIP-2771 Context</h3>
+                <h3 style="color: #10b981;">Our Solution: EIP-2771 Context</h3>
                 <div class="code-block" style="font-size: 0.85rem;">
 User → CompressedBatch → SampleDAppMeta
 
@@ -568,7 +568,7 @@ User → CompressedBatch → SampleDAppMeta
   calldata = originalData + <span style="color:#10b981;">user.address</span>
 
 <span style="color:#10b981;">SampleDAppMeta extracts it:</span>
-  sender = <span style="color:#10b981;">_msgSender()</span> ✅
+  sender = <span style="color:#10b981;">_msgSender()</span>
   <span style="color:#94a3b8;">// Correct user identity preserved!</span>
                 </div>
                 <p class="mt-1">executeWithContext() appends the original sender to calldata. EIP-2771 compatible targets extract the real user.</p>
@@ -579,27 +579,27 @@ User → CompressedBatch → SampleDAppMeta
 
 <!-- SLIDE 10: Cross-User Bundling -->
 <div class="slide" data-slide="10">
-    <h2>🚀 Cross-User Transaction Bundling</h2>
+    <h2>Cross-User Transaction Bundling</h2>
     <p class="mb-1">The relayer collects transactions from multiple users and submits them as ONE on-chain transaction</p>
     <div class="flow-diagram">
-        <div class="flow-box">👤 Alice<br><small style="color:#94a3b8">3 calls</small></div>
+        <div class="flow-box">Alice<br><small style="color:#94a3b8">3 calls</small></div>
         <div class="flow-arrow">→</div>
         <div class="flow-box active" style="min-width: 200px;">
-            🔄 Relayer Queue<br>
+            Relayer Queue<br>
             <small style="color:#94a3b8">Collects & Bundles</small>
         </div>
         <div class="flow-arrow">←</div>
-        <div class="flow-box">👤 Bob<br><small style="color:#94a3b8">2 calls</small></div>
+        <div class="flow-box">Bob<br><small style="color:#94a3b8">2 calls</small></div>
     </div>
     <div class="flow-diagram" style="margin-top: 0;">
-        <div class="flow-box">👤 Charlie<br><small style="color:#94a3b8">4 calls</small></div>
+        <div class="flow-box">Charlie<br><small style="color:#94a3b8">4 calls</small></div>
         <div class="flow-arrow">→</div>
         <div class="flow-box active" style="min-width: 200px;">
-            📦 executeBundledBatches()<br>
+            executeBundledBatches()<br>
             <small style="color:#94a3b8">1 transaction on-chain</small>
         </div>
         <div class="flow-arrow">→</div>
-        <div class="flow-box" style="border-color: #10b981;">⛓ Blockchain<br><small style="color:#10b981">9 calls, 1 tx</small></div>
+        <div class="flow-box" style="border-color: #10b981;">Blockchain<br><small style="color:#10b981">9 calls, 1 tx</small></div>
     </div>
     <div class="stat-row mt-1">
         <div class="stat-box">
@@ -846,10 +846,10 @@ User → CompressedBatch → SampleDAppMeta
                     <li>Quick Demo: 5 or 10 actions pre-loaded</li>
                     <li>4 execution modes:
                         <ul style="margin-left: 1.5rem;">
-                            <li>🐌 Individual (baseline comparison)</li>
-                            <li>📦 Standard Batch</li>
-                            <li>⚡ Compressed Batch</li>
-                            <li>🔐 Meta-Tx via Relayer</li>
+                            <li>Individual (baseline comparison)</li>
+                            <li>Standard Batch</li>
+                            <li>Compressed Batch</li>
+                            <li>Meta-Tx via Relayer</li>
                         </ul>
                     </li>
                 </ul>
@@ -995,7 +995,7 @@ $ npx hardhat test
     <div class="columns">
         <div class="col">
             <div class="card novel">
-                <h3>🏆 Novel Contributions</h3>
+                <h3>Novel Contributions</h3>
                 <ul>
                     <li><strong>Calldata Compression</strong> — Target deduplication via index table. Not found in standard batch implementations. Genuine gas savings at scale.</li>
                     <li><strong>Context-Preserving Batching</strong> — Solves the msg.sender identity loss. Users keep their identity through batched calls via EIP-2771.</li>

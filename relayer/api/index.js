@@ -104,6 +104,14 @@ function rateLimit(req, res, next) {
 //                              ROUTES
 // ═══════════════════════════════════════════════════════════════════════════
 
+app.get('/', (req, res) => {
+    res.json({
+        name: 'Gas Fee Optimizer Relayer',
+        version: '1.0.0',
+        endpoints: ['/health', '/status', '/nonce/:address', '/relay/batch', '/relay/compressed', '/gas-price'],
+    });
+});
+
 app.get('/health', (req, res) => {
     try {
         const wallet = getWallet();

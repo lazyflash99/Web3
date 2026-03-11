@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Gas Fee Optimizer - Deployed UI Link</title>
+<style>
+    @page { size: A4; margin: 2cm; }
+    body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        max-width: 700px;
+        margin: 40px auto;
+        padding: 40px;
+        color: #1e293b;
+        line-height: 1.6;
+    }
+    h1 { color: #6366f1; font-size: 28px; margin-bottom: 5px; }
+    h2 { color: #475569; font-size: 18px; margin-top: 30px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
+    .subtitle { color: #64748b; font-size: 14px; margin-bottom: 30px; }
+    .link-box {
+        background: #f1f5f9;
+        border: 2px solid #6366f1;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 15px 0;
+    }
+    .link-box a {
+        color: #6366f1;
+        font-size: 20px;
+        font-weight: 700;
+        text-decoration: none;
+    }
+    .link-box a:hover { text-decoration: underline; }
+    .link-label { color: #64748b; font-size: 13px; margin-bottom: 5px; }
+    table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13px; }
+    th { background: #6366f1; color: white; padding: 8px 12px; text-align: left; }
+    td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; }
+    tr:nth-child(even) { background: #f8fafc; }
+    .badge { display: inline-block; background: #6366f1; color: white; padding: 3px 10px; border-radius: 12px; font-size: 12px; margin-right: 5px; }
+    .badge-green { background: #10b981; }
+    .footer { margin-top: 40px; padding-top: 15px; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 12px; }
+    @media print {
+        body { margin: 0; padding: 20px; }
+        .link-box a { color: #6366f1 !important; }
+    }
+</style>
+</head>
+<body>
+
+<h1>Gas Fee Optimizer &amp; Batch Transaction System</h1>
+<div class="subtitle">KRITI 2026 &bull; Web3Assam &bull; Submission Document</div>
+
+<h2>Deployed UI</h2>
+<div class="link-box">
+    <div class="link-label">Live Frontend (GitHub Pages):</div>
+    <a href="https://ask-812.github.io/Web3/">https://ask-812.github.io/Web3/</a>
+</div>
+
+<h2>Relayer Service</h2>
+<div class="link-box">
+    <div class="link-label">Live Relayer API (Vercel Serverless):</div>
+    <a href="https://relayer-sigma.vercel.app">https://relayer-sigma.vercel.app</a>
+</div>
+
+<h2>Network: Ethereum Sepolia Testnet</h2>
+
+<h2>Deployed Contract Addresses</h2>
+<table>
+    <tr><th>Contract</th><th>Address</th></tr>
+    <tr><td>BatchExecutor</td><td><code>0x2c61E8959b5602C1DD9399fB16ABE9182fc7E3E7</code></td></tr>
+    <tr><td>CompressedBatchExecutor</td><td><code>0x01eAA34feF31F33E5EB15C5084569C1399B9C0CB</code></td></tr>
+    <tr><td>SampleDApp</td><td><code>0x47FF1aCB49cf23C28AA5887FC3bb5073D566f938</code></td></tr>
+    <tr><td>SampleDAppMeta</td><td><code>0xAE3329Cec2A4827dd13E9b86874CF175179B0E54</code></td></tr>
+    <tr><td>GasSponsor</td><td><code>0x856371cEED89a9c14E038e9cd3BF7026B004C663</code></td></tr>
+    <tr><td>Forwarder</td><td><code>0x21a94492478f4A00d29774c3754Ca8aB24FB8c9f</code></td></tr>
+    <tr><td>GaslessToken</td><td><code>0x66Eb4Fe980a960FC04553591c156e5DeDb9d7809</code></td></tr>
+</table>
+
+<h2>Live Test Results (Sepolia, 5-Call Benchmark)</h2>
+<table>
+    <tr><th>Execution Mode</th><th>Gas Used</th><th>Savings</th></tr>
+    <tr><td>Individual (5 txs)</td><td>822,578 gas</td><td>&mdash; (baseline)</td></tr>
+    <tr><td>Standard Batch (1 tx)</td><td>776,980 gas</td><td>5.5%</td></tr>
+    <tr><td>Compressed Batch (1 tx)</td><td>765,597 gas</td><td>6.9%</td></tr>
+    <tr><td>Meta-Tx Relayer (gasless)</td><td>695,423 gas</td><td><strong>15.5% &mdash; user paid ZERO</strong></td></tr>
+</table>
+
+<h2>Key Features</h2>
+<p>
+    <span class="badge">Transaction Batching</span>
+    <span class="badge">Meta-Transactions (EIP-712)</span>
+    <span class="badge badge-green">Gas Sponsorship</span>
+    <span class="badge">Calldata Compression</span>
+    <span class="badge badge-green">Cross-User Bundling</span>
+    <span class="badge">EIP-2771 Context</span>
+</p>
+
+<h2>Tech Stack</h2>
+<p>Solidity 0.8.24 &bull; Hardhat &bull; ethers.js &bull; OpenZeppelin &bull; Node.js Relayer &bull; Vercel Serverless &bull; GitHub Pages</p>
+
+<h2>How to Use the Live UI</h2>
+<ol>
+    <li>Visit <a href="https://ask-812.github.io/Web3/">https://ask-812.github.io/Web3/</a></li>
+    <li>Connect MetaMask (auto-switches to Sepolia)</li>
+    <li>Click "Load Contracts" to load deployed contracts</li>
+    <li>Click "Quick Demo (5 Actions)" to load sample actions</li>
+    <li>Try all 4 execution modes and compare gas savings</li>
+</ol>
+
+<div class="footer">
+    <p>Gas Fee Optimizer &amp; Batch Transaction System &bull; KRITI 2026 &bull; Web3Assam</p>
+    <p>15+ smart contracts &bull; 67+ tests &bull; 6 EIP standards &bull; Deployed on Sepolia</p>
+</div>
+
+</body>
+</html>
