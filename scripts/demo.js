@@ -6,9 +6,11 @@ const path = require("path");
  * Demo Script - Gas Fee Optimizer Demonstration
  * 
  * This script demonstrates:
- * 1. Direct batch execution (user pays gas, but for all actions in one tx)
- * 2. Meta-transaction batch execution (relayer pays gas)
- * 3. Gas savings comparison
+ * 1. Individual transactions (baseline)
+ * 2. Standard batch execution (user pays gas, all actions in one tx)
+ * 2B. Compressed batch execution (calldata-optimized, single target)
+ * 3. Meta-transaction batch execution (relayer pays gas)
+ * 4. Gas savings comparison across all modes
  */
 
 async function main() {
@@ -34,8 +36,11 @@ async function main() {
     const batchExecutor = await BatchExecutor.deploy();
     const SampleDApp = await hre.ethers.getContractFactory("SampleDApp");
     const sampleDApp = await SampleDApp.deploy();
+    const CompressedBatchExecutor = await hre.ethers.getContractFactory("CompressedBatchExecutor");
+    const compressedBatchExecutor = await CompressedBatchExecutor.deploy();
     contracts = {
       BatchExecutor: await batchExecutor.getAddress(),
+      CompressedBatchExecutor: await compressedBatchExecutor.getAddress(),
       SampleDApp: await sampleDApp.getAddress()
     };
   }
@@ -44,8 +49,11 @@ async function main() {
   const batchExecutor = await hre.ethers.getContractAt("BatchExecutor", contracts.BatchExecutor);
   const sampleDApp = await hre.ethers.getContractAt("SampleDApp", contracts.SampleDApp);
   
+  const compressedExecutor = await hre.ethers.getContractAt("CompressedBatchExecutor", contracts.CompressedBatchExecutor);
+
   console.log("\nContracts loaded:");
   console.log("- BatchExecutor:", contracts.BatchExecutor);
+  console.log("- CompressedBatchExecutor:", contracts.CompressedBatchExecutor);
   console.log("- SampleDApp:", contracts.SampleDApp);
 
   // ============================================
@@ -132,6 +140,35 @@ async function main() {
   console.log(`   Individual transactions: ${totalGasIndividual} gas`);
   console.log(`   Batched transaction:     ${totalGasBatched} gas`);
   console.log(`   Gas saved:               ${gasSaved} gas (${savingsPercent}%)`);
+
+  // ============================================
+  // DEMO 2B: Compressed Batch (Same Target)
+  // ============================================
+  console.log("\n============================================");
+  console.log("DEMO 2B: Compressed Batch (Calldata Optimized)");
+  console.log("============================================\n");
+
+  // Same 4 calls but using executeSameTarget — no repeated target address
+  const compressedData = [
+    sampleDApp.interface.encodeFunctionData("updateProfile", ["Charlie", "Compressed Expert"]),
+    sampleDApp.interface.encodeFunctionData("createListing", ["Compressed NFT #1", hre.ethers.parseEther("0.15")]),
+    sampleDApp.interface.encodeFunctionData("createListing", ["Compressed NFT #2", hre.ethers.parseEther("0.25")]),
+    sampleDApp.interface.encodeFunctionData("createListing", ["Compressed NFT #3", hre.ethers.parseEther("0.35")])
+  ];
+
+  console.log("Executing compressed batch with 4 calls (single target)...");
+  tx = await compressedExecutor.connect(user).executeSameTarget(contracts.SampleDApp, compressedData);
+  receipt = await tx.wait();
+  const totalGasCompressed = receipt.gasUsed;
+  console.log(`   Gas used: ${totalGasCompressed}`);
+
+  const compSaved = totalGasIndividual - totalGasCompressed;
+  const compPercent = Number((compSaved * 100n) / totalGasIndividual);
+
+  console.log("\nGas Comparison (all 3 modes):");
+  console.log(`   Individual:  ${totalGasIndividual} gas (baseline)`);
+  console.log(`   Std Batch:   ${totalGasBatched} gas (${savingsPercent}% saved)`);
+  console.log(`   Compressed:  ${totalGasCompressed} gas (${compPercent}% saved)`);
 
   // ============================================
   // DEMO 3: Meta-Transaction (Gasless for User)
