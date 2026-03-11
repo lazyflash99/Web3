@@ -117,6 +117,8 @@ npx hardhat run scripts/demo.js --network localhost
 npm install
 ```
 
+> **Note:** If you encounter peer dependency conflicts, run `npm install --legacy-peer-deps`
+
 ### Step 2: Compile Smart Contracts
 
 ```bash
@@ -650,6 +652,43 @@ curl -X POST http://localhost:3000/relay/batch \
     "signature": "0x..."
   }'
 ```
+
+---
+
+## Live Deployment (Sepolia Testnet)
+
+The system is deployed and fully functional on the Ethereum Sepolia testnet.
+
+### Deployed UI
+
+**https://ask-812.github.io/Web3/**
+
+### Relayer Service
+
+**https://relayer-sigma.vercel.app** (Vercel serverless)
+
+### Contract Addresses (Sepolia)
+
+| Contract | Address |
+|----------|---------|
+| BatchExecutor | `0x2c61E8959b5602C1DD9399fB16ABE9182fc7E3E7` |
+| CompressedBatchExecutor | `0x01eAA34feF31F33E5EB15C5084569C1399B9C0CB` |
+| SampleDApp | `0x47FF1aCB49cf23C28AA5887FC3bb5073D566f938` |
+| SampleDAppMeta | `0xAE3329Cec2A4827dd13E9b86874CF175179B0E54` |
+| GasSponsor | `0x856371cEED89a9c14E038e9cd3BF7026B004C663` |
+| Forwarder | `0x21a94492478f4A00d29774c3754Ca8aB24FB8c9f` |
+| GaslessToken | `0x66Eb4Fe980a960FC04553591c156e5DeDb9d7809` |
+
+### Live Test Results (Sepolia, 5-Call Benchmark)
+
+| Execution Mode | Gas Used | Savings vs Individual |
+|---|---|---|
+| Individual (5 separate txs) | 822,578 gas | — (baseline) |
+| Standard Batch (1 tx) | 776,980 gas | 5.5% |
+| Compressed Batch (1 tx) | 765,597 gas | 6.9% |
+| Meta-Tx via Relayer (gasless) | 695,423 gas | **15.5% — user paid ZERO gas** |
+
+All four execution modes verified end-to-end with real on-chain Sepolia transactions.
 
 ---
 

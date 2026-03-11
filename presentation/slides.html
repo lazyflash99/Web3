@@ -856,30 +856,38 @@ User → CompressedBatch → SampleDAppMeta
             </div>
         </div>
         <div class="col">
-            <h3>Visual Gas Comparison</h3>
+            <h3>Live Deployment (Sepolia)</h3>
             <div class="card highlight">
-                <p style="margin-bottom: 0.5rem;">Real-time animated bar chart showing:</p>
+                <p style="margin-bottom: 0.5rem;"><strong>Deployed UI:</strong> <a href="https://ask-812.github.io/Web3/" style="color: #6366f1;">ask-812.github.io/Web3</a></p>
+                <p style="margin-bottom: 0.5rem;"><strong>Relayer:</strong> <a href="https://relayer-sigma.vercel.app" style="color: #6366f1;">relayer-sigma.vercel.app</a></p>
+                <p style="margin-bottom: 0.5rem; font-size: 0.85rem; color: #94a3b8;">Real-time gas comparison from Sepolia testnet:</p>
                 <div class="bar-chart">
                     <div class="bar-row">
                         <div class="bar-label" style="font-size: 0.75rem; color: #ef4444;">Individual</div>
                         <div class="bar-container" style="height: 24px;">
-                            <div class="bar-fill red" style="width: 100%; font-size: 0.7rem;">836,218</div>
+                            <div class="bar-fill red" style="width: 100%; font-size: 0.7rem;">822,578</div>
                         </div>
                     </div>
                     <div class="bar-row">
                         <div class="bar-label" style="font-size: 0.75rem; color: #6366f1;">Std Batch</div>
                         <div class="bar-container" style="height: 24px;">
-                            <div class="bar-fill blue" style="width: 91%; font-size: 0.7rem;">762,080</div>
+                            <div class="bar-fill blue" style="width: 94.5%; font-size: 0.7rem;">776,980</div>
                         </div>
                     </div>
                     <div class="bar-row">
                         <div class="bar-label" style="font-size: 0.75rem; color: #a855f7;">Compressed</div>
                         <div class="bar-container" style="height: 24px;">
-                            <div class="bar-fill purple" style="width: 91%; font-size: 0.7rem;">764,985</div>
+                            <div class="bar-fill purple" style="width: 93.1%; font-size: 0.7rem;">765,597</div>
+                        </div>
+                    </div>
+                    <div class="bar-row">
+                        <div class="bar-label" style="font-size: 0.75rem; color: #10b981;">Meta-Tx</div>
+                        <div class="bar-container" style="height: 24px;">
+                            <div class="bar-fill" style="width: 84.5%; font-size: 0.7rem; background: linear-gradient(90deg, #10b981, #059669);">695,423 (0 user gas)</div>
                         </div>
                     </div>
                 </div>
-                <p style="color: #10b981; font-weight: 600; margin-top: 0.5rem;">Live gas comparison with real on-chain data</p>
+                <p style="color: #10b981; font-weight: 600; margin-top: 0.5rem;">Verified on Sepolia — all 4 modes tested end-to-end</p>
             </div>
             <p class="mt-1">Self-contained single HTML file. No build step needed. Uses ethers.js CDN.</p>
         </div>
@@ -1035,7 +1043,10 @@ $ npx hardhat test
             <span class="badge badge-purple" style="margin-left: 0.5rem;">Calldata Compression</span>
             <span class="badge badge-orange" style="margin-left: 0.5rem;">Zero Gas for Users</span>
         </div>
-        <div style="margin-top: 3rem; color: #64748b;">
+        <div style="margin-top: 2rem;">
+            <p style="color: #94a3b8;">Live: <a href="https://ask-812.github.io/Web3/" style="color: #6366f1;">ask-812.github.io/Web3</a></p>
+        </div>
+        <div style="margin-top: 1rem; color: #64748b;">
             <p>15+ contracts &bull; 67+ tests &bull; 6 EIP standards &bull; Cross-user bundling &bull; Context preservation</p>
         </div>
     </div>
