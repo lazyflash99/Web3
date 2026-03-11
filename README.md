@@ -62,7 +62,7 @@ This project solves these problems by implementing:
 - EIP-2612 Permit for gasless approvals
 - EIP-4337 Account Abstraction (simplified)
 - OpenZeppelin security standards
-- Comprehensive test coverage (57 tests)
+- Comprehensive test coverage (66 tests)
 - Gas usage analytics
 - TypeScript SDK for easy integration
 - Node.js Relayer service
@@ -250,6 +250,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed architecture docum
 | Contract | Description |
 |----------|-------------|
 | `BatchExecutor.sol` | Core batching and meta-transaction executor |
+| `CompressedBatchExecutor.sol` | Calldata-compressed batch executor with context preservation |
 | `GasSponsor.sol` | Gas sponsorship management |
 | `Forwarder.sol` | EIP-2771 compliant forwarder |
 | `MetaTxRecipient.sol` | Base contract for meta-tx recipients |
@@ -328,7 +329,7 @@ REPORT_GAS=true npx hardhat test
 npx hardhat coverage
 ```
 
-### Expected Output (57 Tests)
+### Expected Output (66 Tests)
 
 ```
   Advanced Gas Optimizer Features
@@ -372,7 +373,7 @@ npx hardhat coverage
     Batched transaction total:     619,126 gas
     Gas saved:                     37,526 gas (5%)
 
-  57 passing
+  66 passing
 ```
 
 ---
@@ -514,6 +515,7 @@ User paid ZERO gas! Relayer covered the cost.
 web3/
 ├── contracts/
 │   ├── BatchExecutor.sol           # Core batch executor with meta-tx
+│   ├── CompressedBatchExecutor.sol  # Calldata-compressed batch executor
 │   ├── GasSponsor.sol              # Gas sponsorship management
 │   ├── Forwarder.sol               # EIP-2771 forwarder
 │   ├── MetaTxRecipient.sol         # Base for meta-tx recipients
@@ -541,7 +543,8 @@ web3/
 │   └── demo.js                     # Demo script showing savings
 ├── test/
 │   ├── GasOptimizer.test.js        # Core functionality tests
-│   └── Advanced.test.js            # Advanced features tests
+│   ├── Advanced.test.js            # Advanced features tests
+│   └── Compressed.test.js          # Compressed batch comparison tests
 ├── frontend/
 │   ├── index.html                  # Web interface
 │   └── serve.js                    # Local development server
