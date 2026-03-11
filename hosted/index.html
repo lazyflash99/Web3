@@ -350,7 +350,6 @@
         let pendingCalls = [];
         let gasResults = { individual: null, standard: null, compressed: null };
 
-        // Public RPCs keyed by chainId (avoids MetaMask rate limiting)
         // Public RPCs keyed by chainId (round-robin to avoid rate limiting)
         const PUBLIC_RPC_LIST = {
             11155111: [
