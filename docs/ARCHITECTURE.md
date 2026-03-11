@@ -68,6 +68,14 @@ This document describes the architecture of a Gas Fee Optimizer and Batch Transa
 │  │  └─────────────┘  └─────────────┘  └─────────────┘   │                   │
 │  └───────────────────────────────────────────────────────┘                   │
 │                                                                               │
+│  ┌───────────────────────────────────────────────────────┐                   │
+│  │              CompressedBatchExecutor                    │                   │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐   │                   │
+│  │  │  Calldata   │  │  Cross-User │  │  EIP-2771   │   │                   │
+│  │  │ Compression │  │  Bundling   │  │  Context    │   │                   │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘   │                   │
+│  └───────────────────────────────────────────────────────┘                   │
+│                                                                               │
 │  ┌─────────────────────┐  ┌─────────────────────┐                            │
 │  │     Forwarder       │  │   Target Contracts  │                            │
 │  │    (EIP-2771)       │  │   (SampleDApp,etc)  │                            │
@@ -128,7 +136,33 @@ Standard meta-transaction forwarder compatible with any EIP-2771 recipient.
 - Batch forwarding support
 - Signature verification
 
-### 4. MetaTxRecipient Base Contract
+### 4. CompressedBatchExecutor Contract
+
+Advanced batch executor with **calldata compression** for maximum gas efficiency.
+
+**Five Execution Modes:**
+
+| Mode | Function | Optimization |
+|------|----------|-------------|
+| Same Target | `executeSameTarget(target, dataArray)` | Eliminates N-1 repeated target addresses (20 bytes each) |
+| Compressed Index | `executeCompressedBatch(targets, calls)` | Uses uint8 index (1 byte) instead of address (20 bytes) |
+| Context-Preserving | `executeWithContext(target, dataArray)` | EIP-2771: appends original sender to calldata |
+| Context Meta-Tx | `executeWithContextMeta(...)` | Gasless + user identity preserved |
+| Cross-User Bundle | `executeBundledBatches(batches)` | N users' calls in 1 transaction |
+
+**Gas Savings (vs Standard Batch):**
+- Target deduplication: saves 19 bytes per repeated call (304 gas)
+- Value field elimination: saves 32 bytes per zero-value call (128-512 gas)
+- Cross-user bundling: saves (N-1) x 21,000 gas in base overhead
+- Most effective on L2s where calldata is the dominant cost
+
+**Key Features:**
+- Separate nonce tracking per user
+- Calldata savings analytics (`totalCalldataSaved`)
+- Assembly-optimized revert bubbling
+- All modes protected by ReentrancyGuard
+
+### 5. MetaTxRecipient Base Contract
 
 Abstract contract for target contracts to support meta-transactions.
 
@@ -351,7 +385,28 @@ Savings: (N-1) × 21,000 gas
 - 1 batched transaction: 1 × 21,000 = 21,000 gas overhead
 - **Savings: 84,000 gas in base overhead (~80% of overhead; ~12-17% total gas)**
 
-### 2. Calldata Optimization
+### 3. Calldata Keyword Compression (CompressedBatchExecutor)
+
+**Target Deduplication:**
+```
+Standard Batch calldata per call:  20 bytes (target) + 32 bytes (value) + data
+Compressed (same target):          0 bytes (target) + 0 bytes (value) + data
+Compressed (index table):          1 byte (uint8 index) + data
+
+Savings per call: 19-52 bytes × 16 gas/byte = 304-832 gas
+```
+
+**Cross-User Bundling:**
+```
+N separate meta-txs: N × 21,000 base + N × signature verification
+Bundled:              1 × 21,000 base + N × signature verification
+
+Savings: (N-1) × 21,000 gas in base overhead
+```
+
+Calldata compression is most impactful on L2 rollups (Arbitrum, Optimism, Base) where calldata accounts for 80-95% of transaction cost.
+
+### 3. Calldata Keyword Optimization
 
 ```solidity
 // Use tight packing for structs
@@ -365,7 +420,7 @@ struct Call {
 function executeBatch(Call[] calldata calls) external
 ```
 
-### 3. Storage Access Patterns
+### 4. Storage Access Patterns
 
 ```solidity
 // Single storage read for multiple checks
@@ -374,7 +429,7 @@ if (request.nonce != nonce) revert InvalidNonce();
 nonces[request.from] = nonce + 1;  // Single write
 ```
 
-### 4. Short-Circuit Evaluation
+### 5. Short-Circuit Evaluation
 
 ```solidity
 // Check cheap operations first

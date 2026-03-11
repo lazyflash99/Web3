@@ -412,6 +412,16 @@ Gas Comparison:
    Batched transaction:     196,567 gas
    Gas saved:               82,813 gas (12%)
 
+DEMO 2B: Compressed Batch (Calldata Optimized)
+============================================
+Executing compressed batch with 4 calls (single target)...
+   Gas used: 196,012
+
+Gas Comparison (all 3 modes):
+   Individual:  279,380 gas (baseline)
+   Std Batch:   196,567 gas (12% saved)
+   Compressed:  196,012 gas (13% saved)
+
 DEMO 3: Meta-Transaction (Gasless)
 ============================================
 User signing meta-transaction off-chain...
@@ -540,7 +550,8 @@ web3/
 │       └── GasPriceOracle.sol      # Gas price tracking & predictions
 ├── scripts/
 │   ├── deploy.js                   # Deployment script
-│   └── demo.js                     # Demo script showing savings
+│   ├── demo.js                     # Demo script showing savings
+│   └── e2e-relayer-demo.js         # End-to-end relayer demo
 ├── test/
 │   ├── GasOptimizer.test.js        # Core functionality tests
 │   ├── Advanced.test.js            # Advanced features tests

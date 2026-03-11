@@ -1005,6 +1005,14 @@ function permit(
 │  │  │ Sponsor  │ │(EIP-2771)│ │  DApp    │ │ (ERC-20) │              │    │
 │  │  └──────────┘ └──────────┘ └──────────┘ └──────────┘              │    │
 │  │                                                                      │    │
+│  │  ┌──────────────────────────────────────────────────────┐           │    │
+│  │  │             CompressedBatchExecutor                    │           │    │
+│  │  │  • executeSameTarget()     - Single target batching   │           │    │
+│  │  │  • executeCompressedBatch()- Index table compression  │           │    │
+│  │  │  • executeWithContext()    - EIP-2771 preservation    │           │    │
+│  │  │  • executeBundledBatches() - Cross-user bundling      │           │    │
+│  │  └──────────────────────────────────────────────────────┘           │    │
+│  │                                                                      │    │
 │  └──────────────────────────────────────────────────────────────────────┘    │
 │                                                                              │
 └─────────────────────────────────────────────────────────────────────────────┘
@@ -1048,6 +1056,14 @@ function permit(
 │          │      └───────────────┘ └───────────────┘                        │
 │          │                                                                  │
 │          └─────────────────▶ Relayers (authorized addresses)              │
+│                                                                              │
+│  ┌─────────────────────────────────────────────────────────────────┐        │
+│  │                  CompressedBatchExecutor                         │        │
+│  │  • Calldata compression (target deduplication)                  │        │
+│  │  • EIP-2771 context preservation                                │        │
+│  │  • Cross-user bundling (N users in 1 tx)                        │        │
+│  │  • 5 execution modes for optimal gas savings                    │        │
+│  └─────────────────────────────────────────────────────────────────┘        │
 │                                                                              │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -1414,7 +1430,66 @@ function _executeCalls(Call[] calldata calls)
 }
 ```
 
-## 10.2 GasSponsor.sol - Sponsorship Logic
+## 10.2 CompressedBatchExecutor.sol - Calldata Compression
+
+### Why Calldata Compression Matters
+
+Every byte of calldata sent to a smart contract costs gas:
+- Non-zero byte: 16 gas
+- Zero byte: 4 gas
+
+In a standard `executeBatch(Call[])`, each `Call` repeats the target address (20 bytes) and value (32 bytes). When all calls target the same contract (common in dApps), this duplication is wasteful.
+
+### Five Execution Modes
+
+| Mode | Function | When to Use |
+|------|----------|-------------|
+| Same Target | `executeSameTarget(target, dataArray)` | All calls go to one contract (most efficient) |
+| Compressed Index | `executeCompressedBatch(targets, calls)` | Calls to 2-256 unique targets |
+| Context-Preserving | `executeWithContext(target, dataArray)` | Need `msg.sender` identity in target contract |
+| Context Meta-Tx | `executeWithContextMeta(...)` | Gasless + user identity preserved |
+| Cross-User Bundle | `executeBundledBatches(batches)` | Bundle multiple users' calls in 1 tx |
+
+### Calldata Savings Math
+
+```
+Standard Batch per call:   20 bytes (target) + 32 bytes (value) + calldata
+Same Target per call:      0 bytes (target)  + 0 bytes (value)  + calldata
+
+Savings per call: 52 bytes = 52 x 16 = 832 gas (worst case, all non-zero)
+For 10 calls: 9 x 52 = 468 bytes saved = ~7,488 gas
+```
+
+### Context Preservation (EIP-2771)
+
+When a batch executor calls a target contract, `msg.sender` is the executor -- not the original user. The context-preserving mode appends the original sender address to calldata, allowing EIP-2771-compatible targets to recover it:
+
+```solidity
+// Append sender identity to each call
+(bool success, bytes memory returnData) = target.call(
+    abi.encodePacked(dataArray[i], msg.sender)
+);
+```
+
+### Cross-User Bundling
+
+The most powerful mode: a relayer collects signed batches from N users and submits them all in a single transaction.
+
+```
+Without bundling:  N users x 1 tx each = N x 21,000 base gas = N x 21,000
+With bundling:     1 tx for N users    = 1 x 21,000 base gas = 21,000
+
+Savings: (N-1) x 21,000 gas
+For 10 users: 9 x 21,000 = 189,000 gas saved
+```
+
+Each user's signature is independently verified, maintaining trustless security.
+
+### When Compressed Mode Shines
+
+Calldata compression yields modest savings on L1 Ethereum (where execution cost dominates), but delivers significant impact on **L2 rollups** (Arbitrum, Optimism, Base) where calldata accounts for 80-95% of transaction cost. At scale (20+ calls), savings compound substantially.
+
+## 10.3 GasSponsor.sol - Sponsorship Logic
 
 ### Sponsorship Flow
 
@@ -1484,7 +1559,7 @@ struct UserQuota {
 }
 ```
 
-## 10.3 Forwarder.sol - EIP-2771 Implementation
+## 10.4 Forwarder.sol - EIP-2771 Implementation
 
 ### How Sender Extraction Works
 
