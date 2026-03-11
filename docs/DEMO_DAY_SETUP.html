@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gas Fee Optimizer - Demo Day Setup Guide</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #0f172a; color: #f8fafc; padding: 40px; line-height: 1.8; }
+        .container { max-width: 850px; margin: 0 auto; }
+        h1 { font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg, #6366f1, #a855f7); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.5rem; }
+        h2 { font-size: 1.5rem; color: #a855f7; margin: 2.5rem 0 1rem; border-bottom: 1px solid #334155; padding-bottom: 0.5rem; }
+        h3 { font-size: 1.1rem; color: #6366f1; margin: 1.5rem 0 0.5rem; }
+        p { color: #cbd5e1; margin-bottom: 0.75rem; }
+        .subtitle { color: #94a3b8; font-size: 1.1rem; margin-bottom: 2rem; }
+        .badge { display: inline-block; padding: 4px 14px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; }
+        .badge-purple { background: #6366f1; color: white; }
+        .badge-green { background: #10b981; color: white; }
+        .badge-orange { background: #f59e0b; color: #1e293b; }
+        code { background: #1e293b; padding: 2px 8px; border-radius: 4px; font-size: 0.9rem; color: #e2e8f0; font-family: 'Consolas', monospace; }
+        .code-block { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 1rem 1.25rem; font-family: 'Consolas', monospace; font-size: 0.9rem; color: #e2e8f0; margin: 1rem 0; overflow-x: auto; white-space: pre-wrap; }
+        .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 1.5rem; margin: 1rem 0; }
+        .card-highlight { background: #1e293b; border: 2px solid #10b981; border-radius: 12px; padding: 1.5rem; margin: 1rem 0; }
+        .link-box { background: #1e293b; border: 2px solid #6366f1; border-radius: 12px; padding: 1.5rem; margin: 1rem 0; text-align: center; }
+        .link-box a { color: #818cf8; font-size: 1.1rem; font-weight: 600; text-decoration: none; word-break: break-all; }
+        .link-box a:hover { text-decoration: underline; }
+        .link-box .label { color: #94a3b8; font-size: 0.85rem; margin-bottom: 0.5rem; }
+        ol, ul { padding-left: 1.5rem; margin: 0.5rem 0; color: #cbd5e1; }
+        li { margin-bottom: 0.5rem; }
+        .step { display: flex; gap: 1rem; margin-bottom: 1.5rem; align-items: flex-start; }
+        .step-num { background: #6366f1; color: white; font-weight: 700; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1rem; }
+        .step-content { flex: 1; }
+        .warning { background: #422006; border: 1px solid #f59e0b; border-radius: 8px; padding: 1rem; margin: 1rem 0; color: #fbbf24; }
+        .success { background: #052e16; border: 1px solid #10b981; border-radius: 8px; padding: 1rem; margin: 1rem 0; color: #6ee7b7; }
+        .info { background: #0c1a3d; border: 1px solid #6366f1; border-radius: 8px; padding: 1rem; margin: 1rem 0; color: #a5b4fc; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        th, td { padding: 0.6rem 1rem; text-align: left; border-bottom: 1px solid #334155; font-size: 0.9rem; }
+        th { color: #a855f7; }
+        td { color: #cbd5e1; }
+        .checklist { list-style: none; padding-left: 0; }
+        .checklist li { padding: 0.5rem 0; padding-left: 2rem; position: relative; }
+        .checklist li::before { content: ""; position: absolute; left: 0; top: 0.65rem; width: 18px; height: 18px; border: 2px solid #6366f1; border-radius: 4px; }
+        .time-badge { display: inline-block; background: #1e293b; border: 1px solid #334155; padding: 2px 10px; border-radius: 999px; font-size: 0.75rem; color: #94a3b8; margin-left: 0.5rem; }
+        hr { border: none; border-top: 1px solid #334155; margin: 2rem 0; }
+        .footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #334155; color: #64748b; font-size: 0.85rem; text-align: center; }
+        a { color: #818cf8; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .section-label { color: #94a3b8; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem; }
+        img { max-width: 100%; border-radius: 8px; margin: 0.75rem 0; }
+        @media print {
+            body { background: white; color: #1e293b; padding: 20px; }
+            h1 { -webkit-text-fill-color: #4f46e5; color: #4f46e5; }
+            h2 { color: #6366f1; border-bottom-color: #e2e8f0; }
+            h3 { color: #4f46e5; }
+            p, li, td { color: #334155; }
+            th { color: #6366f1; }
+            code { background: #f1f5f9; color: #334155; }
+            .code-block { background: #f1f5f9; border-color: #e2e8f0; color: #334155; }
+            .card, .card-highlight { background: #f8fafc; border-color: #e2e8f0; }
+            .link-box { border-color: #6366f1; background: #f8fafc; }
+            .link-box a { color: #4f46e5; }
+            .link-box .label { color: #64748b; }
+            .warning { background: #fefce8; border-color: #f59e0b; color: #92400e; }
+            .success { background: #f0fdf4; border-color: #10b981; color: #166534; }
+            .info { background: #eef2ff; border-color: #6366f1; color: #4338ca; }
+            .checklist li::before { border-color: #4f46e5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p style="color: #6366f1; font-weight: 600;">KRITI 2026 &bull; Web3Assam</p>
+        <h1>Demo Day Setup Guide</h1>
+        <p class="subtitle">Everything you need to try the Gas Fee Optimizer live demo &mdash; from zero to running in 5 minutes</p>
+        <div>
+            <span class="badge badge-purple">Beginner Friendly</span>
+            <span class="badge badge-green" style="margin-left: 0.5rem;">Sepolia Testnet</span>
+            <span class="badge badge-orange" style="margin-left: 0.5rem;">No Real Money Needed</span>
+        </div>
+
+        <!-- WHAT YOU NEED -->
+        <h2>Before You Start &mdash; Checklist</h2>
+        <div class="card">
+            <ul class="checklist">
+                <li>A laptop/desktop with <strong>Google Chrome</strong> or <strong>Brave</strong> browser</li>
+                <li>An internet connection</li>
+                <li>That's it! Everything else we'll set up below.</li>
+            </ul>
+        </div>
+        <div class="info">
+            We use the <strong>Sepolia testnet</strong> &mdash; a practice version of Ethereum. All the ETH here is fake/free. You will never spend real money.
+        </div>
+
+        <!-- PART 1: INSTALL METAMASK -->
+        <h2>Part 1: Install MetaMask Wallet</h2>
+        <p class="section-label">What is MetaMask?</p>
+        <p>MetaMask is a browser extension that acts as your crypto wallet. Think of it like a digital wallet app (Paytm/GPay) but for Ethereum.</p>
+
+        <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+                <strong>Open Chrome and go to the MetaMask website</strong>
+                <div class="link-box">
+                    <a href="https://metamask.io/download/" target="_blank">https://metamask.io/download/</a>
+                </div>
+                <p>Click <strong>"Install MetaMask for Chrome"</strong>. This opens the Chrome Web Store.</p>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+                <strong>Add the extension</strong>
+                <p>Click <strong>"Add to Chrome"</strong> &rarr; <strong>"Add extension"</strong> in the popup.</p>
+                <p>You'll see a fox icon appear in your browser toolbar (top-right). If you don't see it, click the puzzle icon and pin MetaMask.</p>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+                <strong>Create a new wallet</strong>
+                <ol>
+                    <li>MetaMask opens automatically. Click <strong>"Create a new wallet"</strong>.</li>
+                    <li>Agree to the terms.</li>
+                    <li>Set a password (at least 8 characters). This is just for your browser &mdash; pick something simple for demo day.</li>
+                    <li>It will show you a <strong>Secret Recovery Phrase</strong> (12 words). For a testnet demo, you can skip backing it up &mdash; click <strong>"Remind me later"</strong> if given the option. For real wallets, ALWAYS save this phrase.</li>
+                    <li>Click <strong>"Done"</strong> or <strong>"Got it"</strong>.</li>
+                </ol>
+                <div class="warning">
+                    This is a TESTNET-only wallet. Don't send real ETH to it. For this demo, the recovery phrase doesn't matter since we're using fake ETH.
+                </div>
+            </div>
+        </div>
+
+        <div class="success">
+            MetaMask is installed! You should see a wallet with 0 ETH on Ethereum Mainnet. Next, we switch to Sepolia.
+        </div>
+
+        <!-- PART 2: SWITCH TO SEPOLIA -->
+        <h2>Part 2: Switch to Sepolia Testnet</h2>
+
+        <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+                <strong>Open MetaMask</strong>
+                <p>Click the fox icon in your browser toolbar.</p>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+                <strong>Enable test networks</strong>
+                <ol>
+                    <li>Click the <strong>network dropdown</strong> at the top (it says "Ethereum Mainnet").</li>
+                    <li>If you see "Sepolia" listed, skip to step 3.</li>
+                    <li>If not: Click the <strong>three dots</strong> or <strong>"Show test networks"</strong> toggle at the bottom of the dropdown, or go to <strong>Settings &rarr; Advanced &rarr; Show test networks &rarr; ON</strong>.</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+                <strong>Select Sepolia</strong>
+                <p>Click <strong>"Sepolia test network"</strong> in the dropdown. The network name at the top should now say <strong>Sepolia</strong>.</p>
+                <p>Your balance will show <code>0 SepoliaETH</code> &mdash; that's expected. We'll get free ETH next.</p>
+            </div>
+        </div>
+
+        <div class="success">
+            You're now on Sepolia! The network indicator should show "Sepolia" with a teal/blue color.
+        </div>
+
+        <!-- PART 3: GET FREE ETH -->
+        <h2>Part 3: Get Free Sepolia ETH</h2>
+        <p>You need a small amount of fake ETH to pay for test transactions. Here are free faucets (pick any one that works):</p>
+
+        <h3>Option A: Google Cloud Faucet (Recommended &mdash; No Sign-up)</h3>
+        <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+                <strong>Go to the Google Cloud faucet</strong>
+                <div class="link-box">
+                    <a href="https://cloud.google.com/application/web3/faucet/ethereum/sepolia" target="_blank">https://cloud.google.com/application/web3/faucet/ethereum/sepolia</a>
+                </div>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+                <strong>Copy your wallet address</strong>
+                <p>Open MetaMask &rarr; click your address at the top (it looks like <code>0x1234...abcd</code>) &rarr; it gets copied to clipboard.</p>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+                <strong>Paste and request</strong>
+                <p>Paste your address into the faucet page and click <strong>"Receive"</strong> or <strong>"Request"</strong>.</p>
+                <p>You'll receive <strong>0.05 SepoliaETH</strong> &mdash; more than enough for the demo.</p>
+            </div>
+        </div>
+
+        <hr>
+
+        <h3>Option B: Sepolia PoW Faucet (No Sign-up, Mine in Browser)</h3>
+        <div class="card">
+            <ol>
+                <li>Go to <a href="https://sepolia-faucet.pk910.de" target="_blank">https://sepolia-faucet.pk910.de</a></li>
+                <li>Paste your MetaMask wallet address.</li>
+                <li>Click <strong>"Start Mining"</strong> &mdash; your browser will mine testnet ETH.</li>
+                <li>Wait until you have at least 0.01 ETH, then click <strong>"Stop Mining & Claim Rewards"</strong>.</li>
+            </ol>
+        </div>
+
+        <hr>
+
+        <h3>Option C: Alchemy Faucet (Requires Free Account)</h3>
+        <div class="card">
+            <ol>
+                <li>Go to <a href="https://www.alchemy.com/faucets/ethereum-sepolia" target="_blank">https://www.alchemy.com/faucets/ethereum-sepolia</a></li>
+                <li>Sign up for a free Alchemy account (Google sign-in works).</li>
+                <li>Paste your wallet address and click <strong>"Send Me ETH"</strong>.</li>
+                <li>You'll get 0.5 SepoliaETH (most generous).</li>
+            </ol>
+        </div>
+
+        <hr>
+
+        <h3>Option D: Infura Faucet (Requires Free Account)</h3>
+        <div class="card">
+            <ol>
+                <li>Go to <a href="https://www.infura.io/faucet/sepolia" target="_blank">https://www.infura.io/faucet/sepolia</a></li>
+                <li>Sign up / log in to Infura (free).</li>
+                <li>Paste your address and request ETH.</li>
+            </ol>
+        </div>
+
+        <div class="info">
+            <strong>Faucet not working?</strong> Faucets sometimes have rate limits. Try a different one from the list above, or ask a teammate who already has SepoliaETH to send you some.
+        </div>
+
+        <div class="step">
+            <div class="step-num">!</div>
+            <div class="step-content">
+                <strong>Verify you received ETH</strong>
+                <p>Open MetaMask &rarr; make sure you're on <strong>Sepolia</strong> &rarr; your balance should show something like <code>0.05 SepoliaETH</code>. It may take 30 seconds to a minute to appear.</p>
+            </div>
+        </div>
+
+        <div class="success">
+            You have free testnet ETH! You're ready to use the demo.
+        </div>
+
+        <!-- PART 4: USE THE DEMO -->
+        <h2>Part 4: Run the Live Demo</h2>
+
+        <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+                <strong>Open the Gas Fee Optimizer</strong>
+                <div class="link-box">
+                    <div class="label">LIVE DEMO</div>
+                    <a href="https://ask-812.github.io/Web3/" target="_blank">https://ask-812.github.io/Web3/</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+                <strong>Connect your wallet</strong>
+                <p>Click the <strong>"Connect Wallet"</strong> button. MetaMask will pop up asking you to connect &mdash; click <strong>"Next"</strong> then <strong>"Connect"</strong>.</p>
+                <div class="info">
+                    If MetaMask asks you to switch to Sepolia, click <strong>"Switch network"</strong>. The website auto-detects the correct network.
+                </div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+                <strong>Load demo actions</strong>
+                <p>Click <strong>"Quick Demo (5 Actions)"</strong>. This loads 5 sample blockchain transactions into the action list.</p>
+                <p>You'll see something like:</p>
+                <div class="code-block">Action 1: setValue(42)         ~75,000 gas
+Action 2: increment()          ~75,000 gas
+Action 3: setValue(100)        ~75,000 gas
+Action 4: increment()          ~75,000 gas
+Action 5: setValue(999)        ~75,000 gas
+---
+Total if done individually: ~375,000 gas</div>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-content">
+                <strong>Choose an execution mode</strong>
+                <p>You'll see 4 buttons. Here's what each does:</p>
+                <table>
+                    <tr><th>Mode</th><th>What It Does</th><th>Needs ETH?</th></tr>
+                    <tr><td><strong>Execute Individually</strong></td><td>Sends 5 separate transactions (the old/expensive way)</td><td>Yes</td></tr>
+                    <tr><td><strong>Standard Batch</strong></td><td>Bundles all 5 into 1 transaction (saves gas!)</td><td>Yes</td></tr>
+                    <tr><td><strong>Compressed Batch</strong></td><td>Bundles + compresses calldata (saves even more gas!)</td><td>Yes</td></tr>
+                    <tr><td><strong>Meta-Tx via Relayer</strong></td><td>Gasless! You sign a message and a relayer pays the gas for you</td><td>No!</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num">5</div>
+            <div class="step-content">
+                <strong>Try "Standard Batch" first</strong>
+                <ol>
+                    <li>Click <strong>"Standard Batch"</strong>.</li>
+                    <li>MetaMask pops up showing the transaction. Click <strong>"Confirm"</strong>.</li>
+                    <li>Wait for the transaction to be mined (10-30 seconds on Sepolia).</li>
+                    <li>The Activity Log will show gas used and savings compared to individual execution.</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num">6</div>
+            <div class="step-content">
+                <strong>Try the other modes</strong>
+                <p>Reload the page, reconnect, load 5 actions again, and try <strong>"Compressed Batch"</strong> or <strong>"Meta-Tx via Relayer"</strong>.</p>
+                <p>Compare the gas usage in the Activity Log!</p>
+            </div>
+        </div>
+
+        <div class="success">
+            <strong>Expected Results:</strong><br>
+            - Individual: 5 transactions, ~375,000 total gas<br>
+            - Standard Batch: 1 transaction, ~270,000 gas (saves ~28%)<br>
+            - Compressed Batch: 1 transaction, ~250,000 gas (saves ~33%)<br>
+            - Meta-Tx: 0 gas for you! The relayer pays.
+        </div>
+
+        <!-- NO ETH? USE GASLESS MODE -->
+        <h2>No ETH? Use Gasless Mode!</h2>
+        <div class="card-highlight">
+            <p>If faucets are down or you don't have any SepoliaETH, you can still demo the project:</p>
+            <ol>
+                <li>Open the demo site and connect MetaMask (make sure you're on Sepolia).</li>
+                <li>Click <strong>"Quick Demo (5 Actions)"</strong>.</li>
+                <li>Click <strong>"Meta-Tx via Relayer"</strong>.</li>
+                <li>MetaMask will ask you to <strong>sign a message</strong> (NOT a transaction). This is free &mdash; no gas needed.</li>
+                <li>The relayer server pays the gas on your behalf and submits the transaction.</li>
+                <li>You'll see the result in the Activity Log.</li>
+            </ol>
+            <div class="info">
+                This is the gasless/meta-transaction feature &mdash; one of the key innovations of this project. Users sign an EIP-712 message, and a relayer submits the transaction and pays the gas fee.
+            </div>
+        </div>
+
+        <!-- TROUBLESHOOTING -->
+        <h2>Troubleshooting</h2>
+
+        <div class="card">
+            <h3>MetaMask doesn't pop up when I click "Connect Wallet"</h3>
+            <ul>
+                <li>Make sure MetaMask is installed and the fox icon is visible in your toolbar.</li>
+                <li>Try clicking the fox icon first to unlock MetaMask (enter your password).</li>
+                <li>Refresh the page and try again.</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>"Wrong network" or "Switch to Sepolia" errors</h3>
+            <ul>
+                <li>Open MetaMask &rarr; click the network dropdown at the top &rarr; select <strong>Sepolia test network</strong>.</li>
+                <li>The website should also prompt you to switch automatically.</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>Transaction fails or "insufficient funds"</h3>
+            <ul>
+                <li>Check your SepoliaETH balance in MetaMask. You need at least 0.005 ETH.</li>
+                <li>Try a different faucet from Part 3 above.</li>
+                <li>Or use <strong>"Meta-Tx via Relayer"</strong> which needs zero ETH.</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>"Rate limited" or slow loading</h3>
+            <ul>
+                <li>The website uses free public RPCs which have rate limits. Just wait a few seconds and try again.</li>
+                <li>The website automatically rotates between 5 different RPC endpoints.</li>
+                <li>If batch modes fail, the website falls back to the relayer automatically.</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>MetaMask shows a warning/alert on the transaction</h3>
+            <ul>
+                <li>Click <strong>"Review alert"</strong> or <strong>"I want to proceed anyway"</strong>.</li>
+                <li>Then click <strong>"Confirm"</strong>.</li>
+                <li>This is normal for testnet contracts &mdash; MetaMask warns about unverified contracts.</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>Nothing happens after confirming the transaction</h3>
+            <ul>
+                <li>Sepolia can be slow sometimes. Wait up to 30 seconds.</li>
+                <li>Check the Activity Log on the page for status updates.</li>
+                <li>Open MetaMask and check the "Activity" tab to see if the transaction is pending.</li>
+            </ul>
+        </div>
+
+        <!-- QUICK REFERENCE -->
+        <h2>Quick Reference</h2>
+
+        <h3>Important Links</h3>
+        <table>
+            <tr><th>What</th><th>Link</th></tr>
+            <tr><td>Live Demo</td><td><a href="https://ask-812.github.io/Web3/" target="_blank">https://ask-812.github.io/Web3/</a></td></tr>
+            <tr><td>Install MetaMask</td><td><a href="https://metamask.io/download/" target="_blank">https://metamask.io/download/</a></td></tr>
+            <tr><td>Google Faucet</td><td><a href="https://cloud.google.com/application/web3/faucet/ethereum/sepolia" target="_blank">Google Cloud Sepolia Faucet</a></td></tr>
+            <tr><td>PoW Faucet</td><td><a href="https://sepolia-faucet.pk910.de" target="_blank">https://sepolia-faucet.pk910.de</a></td></tr>
+            <tr><td>Alchemy Faucet</td><td><a href="https://www.alchemy.com/faucets/ethereum-sepolia" target="_blank">Alchemy Sepolia Faucet</a></td></tr>
+            <tr><td>GitHub Repo</td><td><a href="https://github.com/Ask-812/Web3" target="_blank">https://github.com/Ask-812/Web3</a></td></tr>
+        </table>
+
+        <h3>Key Concepts (1-liner each)</h3>
+        <table>
+            <tr><th>Term</th><th>What It Means</th></tr>
+            <tr><td>Gas</td><td>The fee you pay for any Ethereum transaction (like a shipping charge).</td></tr>
+            <tr><td>Batch Transaction</td><td>Combining multiple actions into one transaction to save on base fees.</td></tr>
+            <tr><td>Meta-Transaction</td><td>You sign a message; someone else submits and pays the gas for you.</td></tr>
+            <tr><td>Relayer</td><td>A server that receives your signed message and submits the transaction on your behalf.</td></tr>
+            <tr><td>Sepolia</td><td>A free test version of Ethereum for developers. No real money involved.</td></tr>
+            <tr><td>MetaMask</td><td>A browser-based crypto wallet that connects websites to Ethereum.</td></tr>
+            <tr><td>Calldata Compression</td><td>Making transaction data smaller so it costs less gas to store on-chain.</td></tr>
+        </table>
+
+        <h3>Demo Day Quick Script</h3>
+        <div class="card-highlight">
+            <p><strong>If you have just 2 minutes to show the demo:</strong></p>
+            <ol>
+                <li>Open <a href="https://ask-812.github.io/Web3/" target="_blank">the demo site</a> &rarr; Connect Wallet &rarr; Quick Demo (5 Actions).</li>
+                <li>Click <strong>"Standard Batch"</strong> &rarr; Confirm in MetaMask &rarr; show gas savings in the log.</li>
+                <li>Reload &rarr; Reconnect &rarr; Quick Demo &rarr; Click <strong>"Meta-Tx via Relayer"</strong> &rarr; Sign message &rarr; show that it cost YOU zero gas.</li>
+                <li>Key point: <em>"We saved 28-33% on gas fees through batching, and enabled fully gasless transactions through meta-transactions."</em></li>
+            </ol>
+        </div>
+
+        <div class="footer">
+            Gas Fee Optimizer & Batch Transaction System &mdash; KRITI 2026, Web3Assam<br>
+            Built with Hardhat &middot; Solidity 0.8.24 &middot; ethers.js &middot; OpenZeppelin &middot; EIP-712/2771/2612/4337<br><br>
+            <em>Print this page as PDF: Ctrl+P &rarr; Save as PDF</em>
+        </div>
+    </div>
+</body>
+</html>
