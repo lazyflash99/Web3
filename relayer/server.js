@@ -117,18 +117,18 @@ const COMPRESSED_BATCH_EXECUTOR_ABI = [
 // ═══════════════════════════════════════════════════════════════════════════
 
 async function initialize() {
-    console.log('🚀 Initializing Relayer Service...\n');
+    console.log('Initializing Relayer Service...\n');
     
     // Connect to blockchain
     provider = new ethers.JsonRpcProvider(config.rpcUrl);
     const network = await provider.getNetwork();
-    console.log(`📡 Connected to network: ${network.name} (chainId: ${network.chainId})`);
+    console.log(`Connected to network: ${network.name} (chainId: ${network.chainId})`);
     
     // Initialize wallet
     relayerWallet = new ethers.Wallet(config.relayerPrivateKey, provider);
     const balance = await provider.getBalance(relayerWallet.address);
-    console.log(`💰 Relayer address: ${relayerWallet.address}`);
-    console.log(`💰 Relayer balance: ${ethers.formatEther(balance)} ETH\n`);
+    console.log(`Relayer address: ${relayerWallet.address}`);
+    console.log(`Relayer balance: ${ethers.formatEther(balance)} ETH\n`);
     
     // Initialize contracts if addresses provided
     if (config.batchExecutorAddress) {
@@ -137,7 +137,7 @@ async function initialize() {
             BATCH_EXECUTOR_ABI,
             relayerWallet
         );
-        console.log(`📋 BatchExecutor: ${config.batchExecutorAddress}`);
+        console.log(`BatchExecutor: ${config.batchExecutorAddress}`);
     }
     
     if (config.forwarderAddress) {
@@ -146,7 +146,7 @@ async function initialize() {
             FORWARDER_ABI,
             relayerWallet
         );
-        console.log(`📋 Forwarder: ${config.forwarderAddress}`);
+        console.log(`Forwarder: ${config.forwarderAddress}`);
     }
     
     if (config.gasSponsorAddress) {
@@ -155,7 +155,7 @@ async function initialize() {
             GAS_SPONSOR_ABI,
             relayerWallet
         );
-        console.log(`📋 GasSponsor: ${config.gasSponsorAddress}`);
+        console.log(`GasSponsor: ${config.gasSponsorAddress}`);
     }
     
     if (config.compressedBatchExecutorAddress) {
@@ -164,16 +164,16 @@ async function initialize() {
             COMPRESSED_BATCH_EXECUTOR_ABI,
             relayerWallet
         );
-        console.log(`📋 CompressedBatchExecutor: ${config.compressedBatchExecutorAddress}`);
+        console.log(`CompressedBatchExecutor: ${config.compressedBatchExecutorAddress}`);
     }
     
     // Start bundle flush timer
     if (config.bundling.enabled) {
         flushTimer = setInterval(flushBundleQueue, config.bundling.flushIntervalMs);
-        console.log(`📦 Cross-user bundling enabled (flush every ${config.bundling.flushIntervalMs}ms)`);
+        console.log(`Cross-user bundling enabled (flush every ${config.bundling.flushIntervalMs}ms)`);
     }
     
-    console.log('\n✅ Initialization complete!\n');
+    console.log('\nInitialization complete!\n');
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -388,7 +388,7 @@ app.post('/relay/batch', rateLimit, validateRequest, async (req, res) => {
         }
         
         // Submit transaction
-        console.log(`\n📤 Relaying batch for ${from}`);
+        console.log(`\nRelaying batch for ${from}`);
         console.log(`   Calls: ${calls.length}`);
         console.log(`   Gas estimate: ${gasEstimate}`);
         
@@ -403,7 +403,7 @@ app.post('/relay/batch', rateLimit, validateRequest, async (req, res) => {
         // Wait for confirmation
         const receipt = await tx.wait();
         
-        console.log(`   ✅ Confirmed in block ${receipt.blockNumber}`);
+        console.log(`   Confirmed in block ${receipt.blockNumber}`);
         console.log(`   Gas used: ${receipt.gasUsed}`);
         
         // Update daily usage tracking
@@ -422,7 +422,7 @@ app.post('/relay/batch', rateLimit, validateRequest, async (req, res) => {
         });
         
     } catch (error) {
-        console.error('❌ Relay error:', error.message);
+        console.error('Relay error:', error.message);
         res.status(500).json({
             success: false,
             error: error.message
@@ -463,12 +463,12 @@ app.post('/relay/forward', rateLimit, validateRequest, async (req, res) => {
         };
         
         // Submit transaction
-        console.log(`\n📤 Forwarding for ${from} -> ${to}`);
+        console.log(`\nForwarding for ${from} -> ${to}`);
         
         const tx = await forwarder.execute(forwardRequest, signature);
         const receipt = await tx.wait();
         
-        console.log(`   ✅ Confirmed: ${tx.hash}`);
+        console.log(`   Confirmed: ${tx.hash}`);
         
         res.json({
             success: true,
@@ -480,7 +480,7 @@ app.post('/relay/forward', rateLimit, validateRequest, async (req, res) => {
         });
         
     } catch (error) {
-        console.error('❌ Forward error:', error.message);
+        console.error('Forward error:', error.message);
         res.status(500).json({
             success: false,
             error: error.message
@@ -611,7 +611,7 @@ async function flushBundleQueue() {
     
     if (!compressedBatchExecutor || batch.length === 0) return;
     
-    console.log(`\n📦 Flushing bundle queue: ${batch.length} user batches`);
+    console.log(`\nFlushing bundle queue: ${batch.length} user batches`);
     
     try {
         // Build UserBatch[] for executeBundledBatches
@@ -624,7 +624,7 @@ async function flushBundleQueue() {
         const tx = await compressedBatchExecutor.executeBundledBatches(userBatches);
         const receipt = await tx.wait();
         
-        console.log(`   ✅ Bundle confirmed in block ${receipt.blockNumber}`);
+        console.log(`   Bundle confirmed in block ${receipt.blockNumber}`);
         console.log(`   Gas used: ${receipt.gasUsed} for ${batch.length} users`);
         console.log(`   Gas per user: ~${receipt.gasUsed / BigInt(batch.length)}`);
         
@@ -639,7 +639,7 @@ async function flushBundleQueue() {
             });
         });
     } catch (error) {
-        console.error('❌ Bundle flush error:', error.message);
+        console.error('Bundle flush error:', error.message);
         batch.forEach(entry => entry.reject(error));
     }
 }
@@ -668,7 +668,7 @@ app.post('/relay/bundle', rateLimit, async (req, res) => {
             bundleQueue.push({ from, target, calls, resolve, reject });
         });
         
-        console.log(`📥 Queued bundle request from ${from} (${calls.length} calls, queue size: ${bundleQueue.length})`);
+        console.log(`Queued bundle request from ${from} (${calls.length} calls, queue size: ${bundleQueue.length})`);
         
         // Auto-flush if queue is full
         if (bundleQueue.length >= config.bundling.maxQueueSize) {
@@ -680,7 +680,7 @@ app.post('/relay/bundle', rateLimit, async (req, res) => {
         
         res.json({ success: true, data: result });
     } catch (error) {
-        console.error('❌ Bundle error:', error.message);
+        console.error('Bundle error:', error.message);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -717,7 +717,7 @@ app.post('/relay/compressed', rateLimit, async (req, res) => {
         const tx = await compressedBatchExecutor.executeSameTarget(target, dataArray);
         const receipt = await tx.wait();
         
-        console.log(`📤 Compressed batch: ${dataArray.length} calls to ${target}`);
+        console.log(`Compressed batch: ${dataArray.length} calls to ${target}`);
         console.log(`   Gas used: ${receipt.gasUsed}`);
         
         res.json({
@@ -730,7 +730,7 @@ app.post('/relay/compressed', rateLimit, async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('❌ Compressed relay error:', error.message);
+        console.error('Compressed relay error:', error.message);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -770,7 +770,7 @@ async function startServer() {
     
     app.listen(config.port, () => {
         console.log('═══════════════════════════════════════════════════════');
-        console.log(`🚀 Relayer Service running on port ${config.port}`);
+        console.log(`Relayer Service running on port ${config.port}`);
         console.log('═══════════════════════════════════════════════════════\n');
         console.log('Available endpoints:');
         console.log('  GET  /health              - Health check');

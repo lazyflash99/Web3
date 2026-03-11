@@ -85,7 +85,7 @@ async function main() {
   console.log(`   Gas used: ${receipt.gasUsed}`);
   totalGasIndividual += receipt.gasUsed;
 
-  console.log(`\n📊 Total gas for 4 individual transactions: ${totalGasIndividual}`);
+  console.log(`\nTotal gas for 4 individual transactions: ${totalGasIndividual}`);
 
   // ============================================
   // DEMO 2: Batched Transactions
@@ -128,7 +128,7 @@ async function main() {
   const gasSaved = totalGasIndividual - totalGasBatched;
   const savingsPercent = Number((gasSaved * 100n) / totalGasIndividual);
 
-  console.log("\n📊 Gas Comparison:");
+  console.log("\nGas Comparison:");
   console.log(`   Individual transactions: ${totalGasIndividual} gas`);
   console.log(`   Batched transaction:     ${totalGasBatched} gas`);
   console.log(`   Gas saved:               ${gasSaved} gas (${savingsPercent}%)`);
@@ -206,7 +206,7 @@ async function main() {
   console.log("(No gas required for signing!)");
   
   const signature = await user.signTypedData(domain, types, value);
-  console.log("✅ Signature created:", signature.slice(0, 20) + "...");
+  console.log("Signature created:", signature.slice(0, 20) + "...");
 
   // Relayer submits the transaction
   console.log("\nRelayer submitting transaction on-chain...");
@@ -221,11 +221,11 @@ async function main() {
   const userBalanceAfter = await hre.ethers.provider.getBalance(user.address);
   const relayerBalanceAfter = await hre.ethers.provider.getBalance(signerToUse.address);
 
-  console.log(`✅ Meta-transaction executed! Gas used: ${receipt.gasUsed}`);
-  console.log(`\n📊 Balance Changes:`);
+  console.log(`Meta-transaction executed! Gas used: ${receipt.gasUsed}`);
+  console.log(`\nBalance Changes:`);
   console.log(`   User balance change:    ${hre.ethers.formatEther(userBalanceAfter - userBalanceBefore)} ETH`);
   console.log(`   Relayer balance change: ${hre.ethers.formatEther(relayerBalanceAfter - relayerBalanceBefore)} ETH`);
-  console.log(`\n✅ User paid ZERO gas! Relayer covered the cost.`);
+  console.log(`\nUser paid ZERO gas! Relayer covered the cost.`);
 
   // ============================================
   // Summary
@@ -247,7 +247,7 @@ async function main() {
   console.log(`- Total listings: ${dappStats._totalListings}`);
   console.log(`- Total bids: ${dappStats._totalBids}`);
 
-  console.log("\n✅ Demo completed successfully!");
+  console.log("\nDemo completed successfully!");
 }
 
 main()

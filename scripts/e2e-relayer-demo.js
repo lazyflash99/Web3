@@ -105,11 +105,11 @@ async function main() {
   const result = await response.json();
   
   if (!result.success) {
-    console.log(`   ❌ Relayer error: ${result.error}`);
+    console.log(`   Relayer error: ${result.error}`);
     process.exit(1);
   }
 
-  console.log(`   ✅ Relayer submitted tx: ${result.data.transactionHash}`);
+  console.log(`   Relayer submitted tx: ${result.data.transactionHash}`);
   console.log(`   Block: ${result.data.blockNumber}`);
   console.log(`   Gas used by relayer: ${result.data.gasUsed}\n`);
 
@@ -120,7 +120,7 @@ async function main() {
   const balanceDiff = userBalanceBefore - userBalanceAfter;
   console.log(`   User balance after: ${ethers.formatEther(userBalanceAfter)} ETH`);
   console.log(`   User spent: ${ethers.formatEther(balanceDiff)} ETH`);
-  console.log(`   ${balanceDiff === 0n ? "✅ USER PAID ZERO GAS!" : "❌ User was charged"}`);
+  console.log(`   ${balanceDiff === 0n ? "USER PAID ZERO GAS!" : "User was charged"}`);
 
   // Check that the profile was actually updated
   // Note: SampleDApp uses msg.sender, which in batched execution is the BatchExecutor
